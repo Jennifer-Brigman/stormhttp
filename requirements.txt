@@ -1,0 +1,2 @@
+httptools==0.0.9
+uvloop==0.4.33
