@@ -234,8 +234,8 @@ class HTTPHeaders(collections.MutableMapping):
 
 class HTTPMessage:
     def __init__(self):
-        self.headers = None
-        self.cookies = None
+        self.headers = HTTPHeaders({})
+        self.cookies = HTTPCookies([])
         self.url = None
         self.method = None
         self.body = b''
