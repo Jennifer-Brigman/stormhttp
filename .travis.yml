@@ -1,0 +1,23 @@
+branches:
+  only:
+    - master
+    - develop
+
+language:
+  - python
+
+python:
+  - "3.5"
+  - "3.5-dev"
+  - "nightly"
+
+env:
+  - USE_UVLOOP=0
+  - USE_UVLOOP=1
+
+install:
+  - "pip install -r requirements.txt"
+  - "if [[ $USE_UVLOOP == 0 ]]; then pip uninstall uvloop -y; fi"
+
+script:
+  - "python -m unittest discover"
