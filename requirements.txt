@@ -2,4 +2,3 @@ brotlipy==0.3.0
 cffi==1.7.0
 httptools==0.0.9
 pycparser==2.14
-uvloop==0.4.33
