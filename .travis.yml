@@ -17,7 +17,7 @@ env:
 
 install:
   - "pip install -r requirements.txt"
-  - "if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop -y; fi"
+  - "if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop; fi"
 
 script:
   - "python -m unittest discover"
