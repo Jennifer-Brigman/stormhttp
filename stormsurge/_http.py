@@ -57,7 +57,7 @@ class HTTPHeaders(collections.MutableMapping):
         Converts the headers to bytes to be sent.
         :return: The headers as bytes.
         """
-        return b'\r\n'.join([b'%b: %b' % (name, value) for name, value in self._headers.items()] + [b''])
+        return b'\r\n'.join([b'%b: %b' % (name, value) for name, value in self._headers.items()]) + b'\r\n'
 
 
 class HTTPMessage:
