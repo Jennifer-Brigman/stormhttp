@@ -57,7 +57,7 @@ class HTTPHeaders(collections.MutableMapping):
         Converts the headers to bytes to be sent.
         :return: The headers as bytes.
         """
-        return b'\r\n'.join([b'%b: %b' % (name, value) for name, value in self._headers.items()]) + b'\r\n'
+        return b'\r\n'.join([b'%b: %b' % (name, value) for name, value in self._headers.items()])
 
 
 class HTTPMessage:
@@ -176,30 +176,34 @@ class HTTPResponse(HTTPMessage):
         Converts the HTTPResponse to bytes.
         :return: Bytes to send.
         """
-        return b'HTTP/%b %d %b\r\n%b%b\r\n%b' % (
-            self.version, self.status_code, STATUS_CODES[self.status_code],
-            self.headers.to_bytes(), self.cookies.to_bytes(set_cookie=True), self.body
-        )
+        response_parts = [b'HTTP/%b %d %b' % (self.version, self.status_code, STATUS_CODES[self.status_code])]
+        header_bytes = self.headers.to_bytes()
+        if len(header_bytes) > 0:
+            response_parts.append(header_bytes)
+        cookie_bytes = self.cookies.to_bytes(set_cookie=True)
+        if len(cookie_bytes) > 0:
+            response_parts.append(cookie_bytes)
+        response_parts.extend([b'', self.body])
+        return 'b\r\n'.join(response_parts)
 
 
 class HTTPRequest(HTTPMessage):
     def __init__(self):
         HTTPMessage.__init__(self)
 
-    def create_decorated_response(self) -> HTTPResponse:
-        response = HTTPResponse()
-        response.version = self.version
-        response.cookies = self.cookies
-        return response
-
     def to_bytes(self) -> bytes:
         """
         Converts the HTTPRequest to bytes.
         :return: Bytes received.
         """
-        return b'%b %b HTTP/%b\r\n%b%b\r\n%b' % (
-            self.method, self.url_bytes, self.version, self.headers.to_bytes(), self.cookies.to_bytes(), self.body
-        )
+        request_parts = [b'%b %b HTTP/%b' % (self.method, self.url_bytes, self.version)]
+        header_bytes = self.headers.to_bytes()
+        if len(header_bytes) > 0:
+            request_parts.append(header_bytes)
+        if len(self.cookies) > 0:
+            request_parts.append(self.cookies.to_bytes())
+        request_parts.extend([b'', self.body])
+        return b'\r\n'.join(request_parts)
 
 
 class HTTPErrorResponse(HTTPResponse):

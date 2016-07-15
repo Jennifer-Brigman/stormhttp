@@ -102,8 +102,6 @@ class HTTPCookies(collections.MutableMapping):
                         b' HttpOnly;' if http_only else b'',
                         b' Secure;' if secure else b''
                     ))
-            if len(cookie_headers) > 0:
-                cookie_headers.append(b'')
             return b'\r\n'.join(cookie_headers)
         else:
-            return b'Cookie: %b\r\n' % (b' '.join(b'%b=%b;' % (key, value) for key, value in self._cookies.items()))
+            return b'Cookie: %b' % (b' '.join(b'%b=%b;' % (key, value) for key, value in self._cookies.items()))
