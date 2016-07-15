@@ -6,7 +6,7 @@ import typing
 # Global Variables
 _COOKIE_REGEX = re.compile(b'([^\s=;]+)(?:=([^=;]+))?(?:;|$)')
 _COOKIE_EXPIRE_FORMAT = "%a, %d %b %Y %H:%M:%S UTC"
-_COOKIE_EXPIRE_TIME = datetime.datetime.fromtimestamp(1)
+_COOKIE_EXPIRE_TIME = datetime.datetime.utcfromtimestamp(0)
 
 
 class HTTPCookies(collections.MutableMapping):
@@ -102,6 +102,6 @@ class HTTPCookies(collections.MutableMapping):
                         b' HttpOnly;' if http_only else b'',
                         b' Secure;' if secure else b''
                     ))
-            return b'\r\n'.join(cookie_headers + [b''])
+            return b'\r\n'.join(cookie_headers)
         else:
-            return b'Cookie: %b\r\n' % (b'; '.join(b'%b=%b' % (key, value) for key, value in self._cookies.items()))
+            return b'Cookie: %b' % (b' '.join(b'%b=%b;' % (key, value) for key, value in self._cookies.items()))

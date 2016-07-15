@@ -1,5 +1,19 @@
 from distutils.core import setup
+from setuptools.command.test import test
 from stormsurge import __version__
+
+
+class PyTest(test):
+    def finalize_options(self):
+        test.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        import sys
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
 
 setup(
     name="stormsurge",
@@ -26,5 +40,8 @@ setup(
         "cffi==1.7.0",
         "httptools==0.0.9",
         "pycparser==2.14"
-    ]
+    ],
+    cmdclass={
+        "test": PyTest
+    }
 )

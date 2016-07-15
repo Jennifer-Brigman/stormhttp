@@ -17,7 +17,11 @@ env:
 
 install:
   - "pip install -r requirements.txt"
-  - "if [[ $USE_UVLOOP == 0 ]]; then pip uninstall uvloop -y; fi"
+  - "pip install coverage coveralls pytest"
+  - "if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop; fi"
 
 script:
-  - "python -m unittest discover"
+  - "coverage run --source=stormsurge setup.py test"
+
+after_success:
+  - "coveralls"
