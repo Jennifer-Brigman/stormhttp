@@ -43,7 +43,8 @@ setup(
     ],
     tests_require=[
         "pytest",
-        "coveralls"
+        "coveralls",
+        "coverage"
     ],
     cmdclass={
         "test": PyTest
