@@ -17,6 +17,7 @@ env:
 
 install:
   - "pip install -r requirements.txt"
+  - "pip install coverage"
   - "if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop; fi"
 
 script:
