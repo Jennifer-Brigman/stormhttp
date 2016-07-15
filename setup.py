@@ -40,12 +40,7 @@ setup(
         "cffi==1.7.0",
         "httptools==0.0.9",
         "pycparser==2.14"
-    ],
-    tests_require=[
-        "pytest",
-        "coveralls",
-        "coverage"
-    ],
+    ]
     cmdclass={
         "test": PyTest
     }
