@@ -24,4 +24,4 @@ script:
   - "coverage run --source=stormsurge setup.py test"
 
 after_success:
-  - "python -m coveralls"
+  - "coveralls"
