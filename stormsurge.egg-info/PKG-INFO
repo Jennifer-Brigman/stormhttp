@@ -1,0 +1,19 @@
+Metadata-Version: 1.1
+Name: stormsurge
+Version: 0.0.1
+Summary: Performant asynchronous web application framework.
+Home-page: https://github.com/SethMichaelLarson/Stormsurge
+Author: Seth Michael Larson
+Author-email: sethmichaellarson@protonmail.com
+License: Apache 2
+Download-URL: https://github.com/SethMichaelLarson/Stormsurge/tarball/0.0.1
+Description: UNKNOWN
+Keywords: web,framework,async
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Internet :: WWW/HTTP
