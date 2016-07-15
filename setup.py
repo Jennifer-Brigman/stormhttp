@@ -40,7 +40,7 @@ setup(
         "cffi==1.7.0",
         "httptools==0.0.9",
         "pycparser==2.14"
-    ]
+    ],
     cmdclass={
         "test": PyTest
     }
