@@ -8,8 +8,8 @@ class TestCompression(unittest.TestCase):
 
     def test_gzip_compression(self):
         from stormsurge._compress import compress_bytes
-        self.assertEqual(compress_bytes(b'gzip', b'abc123')[6:],
-                         b'\x89W\x02\xffKLJ642\x06\x00\\\xbb\x02\xcf\x06\x00\x00\x00')
+        self.assertEqual(compress_bytes(b'gzip', b'abc123')[8:],
+                         b'\x02\xffKLJ642\x06\x00\\\xbb\x02\xcf\x06\x00\x00\x00')
 
     def test_deflate_compression(self):
         from stormsurge._compress import compress_bytes

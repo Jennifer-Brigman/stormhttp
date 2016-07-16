@@ -60,38 +60,42 @@ class TestHTTPCookies(unittest.TestCase):
 
     def test_set_meta_max_age_only(self):
         import datetime
-        from stormsurge._cookies import HTTPCookies, _COOKIE_EXPIRE_FORMAT
+        from stormsurge._cookies import HTTPCookies
+        from stormsurge._constants import HTTP_DATETIME_FORMAT
         cookie = HTTPCookies(b'a=1;')
         cookie.set_meta(b'a', max_age=0)
-        now = datetime.datetime.utcnow().strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        now = datetime.datetime.utcnow().strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
         self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
 
     def test_set_meta_expires_only(self):
         import datetime
-        from stormsurge._cookies import HTTPCookies, _COOKIE_EXPIRE_FORMAT
+        from stormsurge._cookies import HTTPCookies
+        from stormsurge._constants import HTTP_DATETIME_FORMAT
         cookie = HTTPCookies(b'a=1;')
         now = datetime.datetime.utcnow()
         cookie.set_meta(b'a', expires=now)
-        now = now.strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        now = now.strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
         self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
 
     def test_set_meta_max_age_and_expires_1(self):
         import datetime
-        from stormsurge._cookies import HTTPCookies, _COOKIE_EXPIRE_FORMAT
+        from stormsurge._cookies import HTTPCookies
+        from stormsurge._constants import HTTP_DATETIME_FORMAT
         cookie = HTTPCookies(b'a=1;')
         now = datetime.datetime.utcnow()
         cookie.set_meta(b'a', expires=now, max_age=10)
-        now = now.strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        now = now.strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
         self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
 
     def test_set_meta_max_age_and_expires_2(self):
         import datetime
-        from stormsurge._cookies import HTTPCookies, _COOKIE_EXPIRE_FORMAT
+        from stormsurge._cookies import HTTPCookies
+        from stormsurge._constants import HTTP_DATETIME_FORMAT
         cookie = HTTPCookies(b'a=1;')
         now = datetime.datetime.now()
         later = now + datetime.timedelta(seconds=10)
         cookie.set_meta(b'a', expires=now, max_age=0)
-        now = now.strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        now = now.strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
         self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
 
     def test_cookie_multiple(self):
