@@ -2,12 +2,6 @@ import unittest
 
 
 class TestHTTPHeaders(unittest.TestCase):
-    def test_header_delete(self):
-        from stormsurge._http import HTTPHeaders
-        headers = HTTPHeaders({b'a': b'1'})
-        self.assertTrue(b'a' in headers)
-        self.assertFalse(b'b' in headers)
-
     def test_header_length(self):
         from stormsurge._http import HTTPHeaders
         headers = HTTPHeaders({b'a': b'1', b'b': b'2'})
