@@ -41,6 +41,11 @@ setup(
         "httptools==0.0.9",
         "pycparser==2.14"
     ],
+    tests_require=[
+        "pytest",
+        "coverage",
+        "coveralls"
+    ],
     cmdclass={
         "test": PyTest
     }

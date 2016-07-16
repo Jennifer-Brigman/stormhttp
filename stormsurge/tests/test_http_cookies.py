@@ -35,10 +35,35 @@ class TestHTTPCookies(unittest.TestCase):
         self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Domain=.example.com;')
 
     def test_expire_cookie(self):
-        from stormsurge._cookies import HTTPCookies
+        import datetime
+        from stormsurge._cookies import HTTPCookies, _COOKIE_EXPIRE_FORMAT
         cookie = HTTPCookies(b'a=1;')
         cookie.expire_cookie(b'a')
         self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=; Expires=Thu, 01 Jan 1970 00:00:00 UTC;')
+
+        cookie = HTTPCookies(b'a=1;')
+        cookie.set_meta(b'a', max_age=0)
+        now = datetime.datetime.utcnow().strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
+
+        cookie = HTTPCookies(b'a=1;')
+        now = datetime.datetime.utcnow()
+        cookie.set_meta(b'a', expires=now)
+        now = now.strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
+
+        cookie = HTTPCookies(b'a=1;')
+        now = datetime.datetime.utcnow()
+        cookie.set_meta(b'a', expires=now, max_age=10)
+        now = now.strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
+
+        cookie = HTTPCookies(b'a=1;')
+        now = datetime.datetime.now()
+        later = now + datetime.timedelta(seconds=10)
+        cookie.set_meta(b'a', expires=now, max_age=0)
+        now = now.strftime(_COOKIE_EXPIRE_FORMAT).encode("latin-1")
+        self.assertEqual(cookie.to_bytes(set_cookie=True), b'Set-Cookie: a=1; Expires=%b;' % now)
 
     def test_cookie_multiple(self):
         from stormsurge._cookies import HTTPCookies
@@ -54,3 +79,19 @@ class TestHTTPCookies(unittest.TestCase):
             b'Set-Cookie: a=3;\r\nSet-Cookie: b=4;',
             b'Set-Cookie: b=4;\r\nSet-Cookie: a=3;'
         ])
+
+        for key in cookie:
+            self.assertIn(key, [b'a', b'b'])
+            self.assertIn(cookie[key], [b'3', b'4'])
+
+        self.assertTrue(b'a' in cookie)
+        self.assertFalse(b'c' in cookie)
+        del cookie[b'a']
+        self.assertEqual(cookie[b'a'], b'')
+
+        with self.assertRaises(KeyError):
+            cookie.set_meta(b'c')
+        with self.assertRaises(KeyError):
+            cookie.expire_cookie(b'c')
+
+
