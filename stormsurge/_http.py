@@ -38,6 +38,8 @@ class HTTPHeaders(collections.MutableMapping):
             if k.lower() == key.lower():
                 del self._headers[k]
                 break
+        else:
+            raise KeyError(str(key))
 
     def __len__(self) -> int:
         return len(self._headers)
