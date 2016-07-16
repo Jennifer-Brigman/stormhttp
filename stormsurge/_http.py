@@ -110,7 +110,7 @@ class HTTPMessage:
             if name is not None:
                 if _buf_done or _buf is None:
                     if _buf == b'Cookie':
-                        _cookies.append(_headers[b'Cookie'])
+                        _cookies += _headers[b'Cookie']
                         del _headers[b'Cookie']
                     _buf = name
                     _buf_done = False
