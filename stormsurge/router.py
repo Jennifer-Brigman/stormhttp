@@ -4,6 +4,7 @@ import socket
 import typing
 from ._http import *
 from ._endpoints import *
+from ._compress import *
 
 # Global Variables
 __all__ = [
@@ -11,7 +12,7 @@ __all__ = [
     "AbstractEndPoint",
     "FileEndPoint"
 ]
-_QVALUE_REGEX = re.compile(b'^\\s?([^;]+)(?:;q=(\\d\\.\\d)|;level=\\d+)+?$')
+_QVALUE_REGEX = re.compile(b'^\\s?([^;]+)\\s?(?:;\\s?q=(\\d\\.\\d)|;\\s?level=\\d+)*$')
 _PREFIX_TREE_SENTINEL = b'///'
 
 
@@ -90,6 +91,14 @@ class Router:
         should_close = request.headers.get(b'Connection', b'') != b'keep-alive'
         if should_close:
             response.headers[b'Connection'] = b'close'
+        if b'Accept-Encoding' in request.headers and b'Content-Encoding' not in response.headers:
+            encodings = self._sort_by_qvalue(request.headers[b'Accept-Encoding'])
+            for enc in encodings:
+                if enc in SUPPORTED_ENCODING_TYPES:
+                    response.body = encode_bytes(enc, response.body)
+                    response.headers[b'Content-Encoding'] = enc
+                    response.headers[b'Content-Length'] = b'%d' % (len(response.body),)
+                    break
         try:
             await self._loop.sock_sendall(client, response.to_bytes())
             if should_close:
