@@ -23,12 +23,12 @@ Benchmarks both use `wrk -t250 -c500 -d30 http://127.0.0.1:5000` to create conne
 Running 30s test @ http://127.0.0.1:5000
   250 threads and 500 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    40.41ms   66.30ms   1.64s    98.66%
-    Req/Sec    33.36     14.32   330.00     73.59%
-  114018 requests in 30.10s, 10.88GB read
-  Socket errors: connect 0, read 0, write 0, timeout 63
-Requests/sec:   3787.85
-Transfer/sec:    370.13MB
+    Latency    38.70ms   59.16ms   1.79s    98.92%
+    Req/Sec    33.58     13.62   100.00     76.17%
+  115776 requests in 30.10s, 11.05GB read
+  Socket errors: connect 0, read 0, write 0, timeout 40
+Requests/sec:   3846.43
+Transfer/sec:    375.86MB
 ```
 
 #### Aiohttp

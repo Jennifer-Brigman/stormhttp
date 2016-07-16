@@ -58,7 +58,15 @@ class Application:
             return
 
 
-def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl: typing.Union[ssl.SSLContext, None]=None) -> None:
+def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl_context: typing.Optional[ssl.SSLContext]=None) -> None:
+    """
+    Runs an Application object as an asyncio server.
+    :param app: Application to run.
+    :param host: Host address to bind to.
+    :param port: Port to bind to.
+    :param ssl_context: Optional SSLContext object.
+    :return: None
+    """
     async def _connect_loop(_loop: asyncio.AbstractEventLoop) -> None:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setblocking(False)
@@ -72,6 +80,12 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl: typing.U
         while True:
             client, _ = await _loop.sock_accept(server)
             _loop.create_task(app.listen_to_client(client))
+
+    scheme = "http"
+    if ssl_context is not None:
+        scheme = "https"
+    print("======== Running on {}://{}:{}/ ========".format(scheme, host, port))
+    print("(Press CTRL+C to quit)")
 
     loop = app._loop
     loop.run_until_complete(_connect_loop(loop))
