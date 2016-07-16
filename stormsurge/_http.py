@@ -186,7 +186,7 @@ class HTTPResponse(HTTPMessage):
         if len(cookie_bytes) > 0:
             response_parts.append(cookie_bytes)
         response_parts.extend([b'', self.body])
-        return 'b\r\n'.join(response_parts)
+        return b'\r\n'.join(response_parts)
 
 
 class HTTPRequest(HTTPMessage):

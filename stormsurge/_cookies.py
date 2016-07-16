@@ -1,11 +1,12 @@
 import collections
 import datetime
 import re
+import sys
 import typing
+from ._constants import HTTP_DATETIME_FORMAT
 
 # Global Variables
 _COOKIE_REGEX = re.compile(b'([^\s=;]+)(?:=([^=;]+))?(?:;|$)')
-_COOKIE_EXPIRE_FORMAT = "%a, %d %b %Y %H:%M:%S UTC"
 _COOKIE_EXPIRE_TIME = datetime.datetime.utcfromtimestamp(0)
 
 
@@ -93,7 +94,7 @@ class HTTPCookies(collections.MutableMapping):
                 if cookie in self._changed:
                     domain, path, expires, http_only, secure = self._meta.get(cookie, _no_meta)
                     if expires is not None:
-                        expires = expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+                        expires = expires.strftime(HTTP_DATETIME_FORMAT).encode("utf-8")
                     cookie_headers.append(b'Set-Cookie: %b=%b;%b%b%b%b%b' % (
                         cookie, self._cookies[cookie],
                         b' Domain=%b;' % domain if domain is not None else b'',

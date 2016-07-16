@@ -1,10 +1,9 @@
 import asyncio
-import hashlib
-import os
 import re
 import socket
 import typing
 from ._http import *
+from ._endpoints import *
 
 # Global Variables
 __all__ = [
@@ -14,54 +13,6 @@ __all__ = [
 ]
 _QVALUE_REGEX = re.compile(b'^\\s?([^;]+)(?:;q=(\\d\\.\\d)|;level=\\d+)+?$')
 _PREFIX_TREE_SENTINEL = b'///'
-
-
-class AbstractEndPoint:
-    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        raise NotImplementedError("AbstractEndPoint.on_request is not implemented.")
-
-
-class FileEndPoint(AbstractEndPoint):
-    def __init__(self, path: str):
-        AbstractEndPoint.__init__(self)
-        self._path = path
-        self._etag = None
-        self._mtime = None
-
-    def _file_modified(self) -> bool:
-        """
-        Checks to see if the file is modified
-        and if it has been changed by it's modify-time.
-        :return: None
-        """
-        try:
-            mtime = int(os.stat(self._path).st_mtime)
-            if self._mtime is not None and self._mtime > mtime:
-                return None
-            self._mtime = mtime
-            with open(self._path, "rb") as f:
-                payload = f.read()
-                self._etag = hashlib.sha1(payload).digest()
-                return payload
-        except OSError:
-            return None
-
-    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        try:
-            modified = await loop.run_in_executor(None, self._file_modified)
-            if modified is not None:
-                response = HTTPResponse()
-                response.version = request.version
-                response.cookies = request.cookies
-                response.body = modified
-                response.headers[b'Content-Length'] = b'%d' % (len(modified),)
-                return response
-            else:
-                return None
-        except OSError:
-            response = request.create_decorated_response()
-            response.status_code = 404
-            return response
 
 
 class Router:
