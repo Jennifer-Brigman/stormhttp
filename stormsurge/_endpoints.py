@@ -19,8 +19,21 @@ class AbstractEndPoint:
         raise NotImplementedError("AbstractEndPoint.on_request is not implemented.")
 
 
+class SimpleEndPoint(AbstractEndPoint):
+    def __init__(self, payload: bytes):
+        AbstractEndPoint.__init__(self)
+        self._payload = payload
+
+    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
+        response = HTTPResponse()
+        response.cookies = request.cookies
+        response.body = self._payload
+        response.headers[b'Content-Type'] = b'text/plain; charset=utf-8'
+        return response
+
+
 class FileEndPoint(AbstractEndPoint):
-    def __init__(self, path: str, content_type: typing.Optional[bytes]=None):
+    def __init__(self, path: str, content_type: typing.Optional[bytes]=None, encoding: str="utf-8"):
         AbstractEndPoint.__init__(self)
         self._path = path
         self._etag = None
@@ -28,12 +41,14 @@ class FileEndPoint(AbstractEndPoint):
         self._last_mod = None
         self._cache = None
         self._content_type = content_type
+        self._encoding = encoding
         if content_type is None and "." in os.path.basename(path):
             ext = path[path.rfind("."):]
             if ext in EXTENSION_TO_MIMETYPE:
-                self._content_type = EXTENSION_TO_MIMETYPE[ext]
+                self._content_type = EXTENSION_TO_MIMETYPE[ext][0]
         if self._content_type is None:
-            self._content_type = b"text/plain"
+            self._content_type = b'text/plain'
+        self._content_type += b'; charset=%b' % (self._encoding.encode("latin-1"),)
 
     def _file_modified(self) -> bool:
         """
@@ -74,6 +89,7 @@ class FileEndPoint(AbstractEndPoint):
                 modified = await loop.run_in_executor(None, self._file_modified)
                 response.body = modified
                 response.headers[b'Content-Length'] = b'%d' % (len(modified),)
+                response.headers[b'Content-Type'] = self._content_type
                 response.headers[b'ETag'] = self._etag
                 response.headers[b'Last-Modified'] = self._last_mod
                 return response

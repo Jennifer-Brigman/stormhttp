@@ -21,5 +21,5 @@ if __name__ == "__main__":
     loop = uvloop.new_event_loop()
     loop.set_default_executor(concurrent.futures.ThreadPoolExecutor())
     app = stormsurge.web.Application(loop)
-    app.router.add_endpoint(b'/', {b'GET'}, BenchmarkEndPoint(b'a' * (1024 * 100)))
+    app.router.add_endpoint(b'/', {b'GET'}, stormsurge.router.FileEndPoint(__file__))
     stormsurge.web.run_app(app)
