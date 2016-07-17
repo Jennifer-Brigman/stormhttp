@@ -8,7 +8,7 @@ except ImportError:
 
 
 def create_standard_request(url=b'/'):
-    from stormsurge._http import HTTPRequest
+    from stormsurge.web import HTTPRequest
     import httptools
     request = HTTPRequest()
     request.url = httptools.parse_url(url)
@@ -84,6 +84,19 @@ class TestHTTPRouter(unittest.TestCase):
 
         asyncio.get_event_loop().run_until_complete(main())
 
+    def test_match_info_duplicate_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/{a}', {b'GET'}, SimpleEndPoint(b'test'))
+            with self.assertRaises(ValueError):
+                router.add_endpoint(b'/{a}', {b'GET'}, SimpleEndPoint(b'test'))
+
+        asyncio.get_event_loop().run_until_complete(main())
+
     def test_add_long_route(self):
         async def main():
             from stormsurge.router import Router
@@ -154,6 +167,21 @@ class TestHTTPRouter(unittest.TestCase):
             request = create_standard_request(b'/a')
             response = await router.route_request(request)
             self.assertEqual(response.status_code, 405)
-            self.assertEqual(b'POST,HEAD', response.headers[b'Allow'])
+            self.assertIn(response.headers[b'Allow'], [b'POST,HEAD', b'HEAD,POST'])
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_partial_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/a/b/c', [b'GET'], SimpleEndPoint(b'test'))
+
+            request = create_standard_request(b'/a/b')
+            response = await router.route_request(request)
+            self.assertEqual(response.status_code, 404)
 
         asyncio.get_event_loop().run_until_complete(main())
