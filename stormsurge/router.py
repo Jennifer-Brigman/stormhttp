@@ -73,7 +73,7 @@ class Router:
                 request.match_info[current_node[_PREFIX_TREE_MATCH]] = step
                 continue
 
-            response = request.create_decorated_response()
+            response = request.decorate_response(HTTPResponse())
             response.status_code = 404
             return response
 
@@ -83,12 +83,12 @@ class Router:
                 endpoint = current_node[request.method]
                 return await endpoint.on_request(self._loop, request)
             else:
-                response = request.create_decorated_response()
+                response = request.decorate_response(HTTPResponse())
                 response.status_code = 405
-                response.headers[b'Allow'] = b', '.join(current_node)
+                response.headers[b'Allow'] = b','.join(current_node)
                 return response
         else:
-            response = request.create_decorated_response()
+            response = request.decorate_response(HTTPResponse())
             response.status_code = 404
             return response
 

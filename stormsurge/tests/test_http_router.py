@@ -113,3 +113,47 @@ class TestHTTPRouter(unittest.TestCase):
             self.assertEqual(response.body, b'test')
 
         asyncio.get_event_loop().run_until_complete(main())
+
+    def test_not_found_route_existing_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/a', [b'GET'], SimpleEndPoint(b'test'))
+
+            request = create_standard_request(b'/b')
+            response = await router.route_request(request)
+            self.assertEqual(response.status_code, 404)
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_not_found_route_no_routes(self):
+        async def main():
+            from stormsurge.router import Router
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+
+            request = create_standard_request(b'/')
+            response = await router.route_request(request)
+            self.assertEqual(response.status_code, 404)
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_not_allowed_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/a', [b'POST', b'HEAD'], SimpleEndPoint(b'test'))
+
+            request = create_standard_request(b'/a')
+            response = await router.route_request(request)
+            self.assertEqual(response.status_code, 405)
+            self.assertEqual(b'POST,HEAD', response.headers[b'Allow'])
+
+        asyncio.get_event_loop().run_until_complete(main())

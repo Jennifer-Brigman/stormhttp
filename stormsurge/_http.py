@@ -208,6 +208,17 @@ class HTTPRequest(HTTPMessage):
         request_parts.extend([b'', self.body])
         return b'\r\n'.join(request_parts)
 
+    def decorate_response(self, response: HTTPResponse) -> HTTPResponse:
+        """
+        Decorates a response with the required information that
+        the response needs from the HTTPRequest.
+        :param response: Response to decorate.
+        :return: Decorated response.
+        """
+        response.cookies = self.cookies
+        response.version = self.version
+        return response
+
 
 class HTTPErrorResponse(HTTPResponse):
     def __init__(self, error: int):
