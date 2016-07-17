@@ -6,14 +6,14 @@ Performant asynchronous web application framework built on [httptools](https://g
 ##### Master Branch
 Version `0.0.1 Alpha`
 
-[![Travis Master](https://img.shields.io/travis/SethMichaelLarson/Stormsurge/master.svg?maxAge=300)]()
-[![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/Stormsurge/master.svg?maxAge=300)]()
-[![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/Stormsurge.svg?maxAge=300)]()
+[![Travis Master](https://img.shields.io/travis/SethMichaelLarson/Stormsurge/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/Stormsurge/branches)
+[![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/Stormsurge/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/Stormsurge?branch=master)
+[![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/Stormsurge.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/Stormsurge/requirements/?branch=develop)
 
 ##### Development Branch
 
-[![Travis Develop](https://img.shields.io/travis/SethMichaelLarson/Stormsurge/develop.svg?maxAge=300)]()
-[![Coveralls Develop](https://img.shields.io/coveralls/SethMichaelLarson/Stormsurge/develop.svg?maxAge=300)]()
+[![Travis Develop](https://img.shields.io/travis/SethMichaelLarson/Stormsurge/develop.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/Stormsurge/branches)
+[![Coveralls Develop](https://img.shields.io/coveralls/SethMichaelLarson/Stormsurge/develop.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/Stormsurge?branch=develop)
 
 ### Benchmarks
 Benchmarks both use `wrk -t250 -c500 -d30 http://127.0.0.1:5000` to create connections.
