@@ -13,7 +13,9 @@ __all__ = [
     "FileEndPoint"
 ]
 _QVALUE_REGEX = re.compile(b'^\\s?([^;]+)\\s?(?:;\\s?q=(\\d\\.\\d)|;\\s?level=\\d+)*$')
+_PREFIX_MATCH_REGEX = re.compile(b'^\\{(.+)}$')
 _PREFIX_TREE_SENTINEL = b'///'
+_PREFIX_TREE_MATCH = b'/*/'
 
 
 class Router:
@@ -35,6 +37,12 @@ class Router:
         current_node = self._prefix_tree
         for step in route_steps:
             if step == b'':
+                continue
+            prefix_match = _PREFIX_MATCH_REGEX.match(step)
+            if prefix_match is not None:
+                if _PREFIX_TREE_MATCH in current_node:
+                    raise ValueError("Route {} has more than one match point.".format(route))
+                current_node[_PREFIX_TREE_MATCH] = prefix_match.groups()[0]
                 continue
             if step not in current_node:
                 current_node[step] = {}
@@ -60,10 +68,14 @@ class Router:
                 continue  # This ensures that trailing / also routes to same place.
             if step in current_node:
                 current_node = current_node[step]
-            else:
-                response = request.create_decorated_response()
-                response.status_code = 404
-                return response
+                continue
+            elif _PREFIX_TREE_MATCH in current_node:
+                request.match_info[current_node[_PREFIX_TREE_MATCH]] = step
+                continue
+
+            response = request.create_decorated_response()
+            response.status_code = 404
+            return response
 
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]

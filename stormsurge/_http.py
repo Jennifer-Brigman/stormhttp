@@ -192,6 +192,7 @@ class HTTPResponse(HTTPMessage):
 class HTTPRequest(HTTPMessage):
     def __init__(self):
         HTTPMessage.__init__(self)
+        self.match_info = {}
 
     def to_bytes(self) -> bytes:
         """

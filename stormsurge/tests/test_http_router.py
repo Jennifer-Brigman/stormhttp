@@ -7,11 +7,11 @@ except ImportError:
     pass
 
 
-def create_standard_request():
+def create_standard_request(url=b'/'):
     from stormsurge._http import HTTPRequest
     import httptools
     request = HTTPRequest()
-    request.url = httptools.parse_url(b'/')
+    request.url = httptools.parse_url(url)
     request.method = b'GET'
     return request
 
@@ -65,5 +65,21 @@ class TestHTTPRouter(unittest.TestCase):
             router.add_endpoint(b'/', {b'GET'}, SimpleEndPoint(b'test'))
             with self.assertRaises(ValueError):
                 router.add_endpoint(b'/', {b'GET'}, SimpleEndPoint(b'test'))
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_match_info_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/{a}', {b'GET'}, SimpleEndPoint(b'test'))
+
+            request = create_standard_request(b'/1')
+            await router.route_request(request)
+            self.assertIn(b'a', request.match_info)
+            self.assertEqual(request.match_info[b'a'], b'1')
 
         asyncio.get_event_loop().run_until_complete(main())
