@@ -83,3 +83,33 @@ class TestHTTPRouter(unittest.TestCase):
             self.assertEqual(request.match_info[b'a'], b'1')
 
         asyncio.get_event_loop().run_until_complete(main())
+
+    def test_add_long_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/a/b/c/d/e', [b'GET'], SimpleEndPoint(b'test'))
+
+            request = create_standard_request(b'/a/b/c/d/e')
+            response = await router.route_request(request)
+            self.assertEqual(response.body, b'test')
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_add_trailing_slash_route(self):
+        async def main():
+            from stormsurge.router import Router
+            from stormsurge._endpoints import SimpleEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint(b'/a/b/c/d/e/', [b'GET'], SimpleEndPoint(b'test'))
+
+            request = create_standard_request(b'/a/b/c/d/e')
+            response = await router.route_request(request)
+            self.assertEqual(response.body, b'test')
+
+        asyncio.get_event_loop().run_until_complete(main())
