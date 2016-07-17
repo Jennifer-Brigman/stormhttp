@@ -281,7 +281,7 @@ EXTENSION_TO_MIMETYPE = {
     ".psd":         [b"application/octet-stream"],
     ".pvu":         [b"paleovu/x-pv"],
     ".pwz":         [b"application/vnd.ms-powerpoint"],
-    ".py":          [b"text/x-script.phyton"],
+    ".py":          [b"text/x-script.python"],
     ".pyc":         [b"application/x-bytecode.python"],
     ".qcp":         [b"audio/vnd.qcelp"],
     ".qd3":         [b"x-world/x-3dmf"],
