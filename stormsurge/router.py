@@ -107,7 +107,7 @@ class Router:
             encodings = self._sort_by_qvalue(request.headers[b'Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
-                    response.body = encode_bytes(enc, response.body)
+                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body)
                     response.headers[b'Content-Encoding'] = enc
                     response.headers[b'Content-Length'] = b'%d' % (len(response.body),)
                     break

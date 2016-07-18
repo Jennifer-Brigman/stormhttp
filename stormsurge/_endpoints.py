@@ -39,6 +39,7 @@ class FileEndPoint(AbstractEndPoint):
         self._etag = None
         self._mtime = None
         self._last_mod = None
+        self._last_mod_dt = None
         self._cache = None
         self._content_type = content_type
         self._encoding = encoding
@@ -60,11 +61,12 @@ class FileEndPoint(AbstractEndPoint):
         if self._cache is not None and mtime <= self._mtime:
             return self._cache
         self._mtime = mtime
-        self._last_mod = datetime.datetime.utcfromtimestamp(mtime).strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
+        self._last_mod_dt = datetime.datetime.utcfromtimestamp(mtime)
+        self._last_mod = self._last_mod_dt.strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
         with open(self._path, "rb") as f:
             payload = f.read()
             self._cache = payload
-            self._etag = hashlib.sha1(payload).digest()
+            self._etag = hashlib.sha1(payload).hexdigest().encode("latin-1")
             return payload
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
@@ -72,21 +74,23 @@ class FileEndPoint(AbstractEndPoint):
         response.version = request.version
 
         resend_data = True
-        if b'If-None-Match' in request.headers and self._etag == request.headers[b'If-None-Match']:
-            resend_data = False
-        if not resend_data and b'If-Modified-Since' in request.headers:
+        if b'If-Modified-Since' in request.headers and self._last_mod_dt is not None:
             try:
                 modified_since = datetime.datetime.strptime(
-                    request.headers[b'If-Modified-Since'].decode("latin-1"), HTTP_DATETIME_FORMAT
+                    request.headers[b'If-Modified-Since'].decode("latin-1"),
+                    HTTP_DATETIME_FORMAT
                 )
-                if modified_since <= self._last_mod:
+                if modified_since >= self._last_mod_dt:
                     resend_data = False
-            except (UnicodeDecodeError, ValueError):
-                pass
+            except (UnicodeDecodeError, ValueError) as error:
+                print("ERROR", error)
 
         if resend_data:
             try:
                 modified = await loop.run_in_executor(None, self._file_modified)
+                if b'If-None-Match' in request.headers and self._etag == request.headers[b'If-None-Match']:
+                    response.status_code = 304
+                    return response
                 response.body = modified
                 response.headers[b'Content-Length'] = b'%d' % (len(modified),)
                 response.headers[b'Content-Type'] = self._content_type
