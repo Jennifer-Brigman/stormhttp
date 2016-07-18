@@ -1,5 +1,4 @@
 import asyncio
-import uvloop
 import stormsurge
 import concurrent.futures
 
@@ -18,7 +17,12 @@ class BenchmarkEndPoint(stormsurge.router.AbstractEndPoint):
 
 
 if __name__ == "__main__":
-    loop = uvloop.new_event_loop()
+    try:
+        import uvloop
+        loop = uvloop.new_event_loop()
+    except ImportError:
+        loop = asyncio.new_event_loop()
+        
     loop.set_default_executor(concurrent.futures.ThreadPoolExecutor())
     app = stormsurge.web.Application(loop)
     app.router.add_endpoint(b'/', {b'GET'}, stormsurge.router.FileEndPoint(__file__))

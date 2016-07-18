@@ -83,7 +83,7 @@ class FileEndPoint(AbstractEndPoint):
                 if modified_since >= self._last_mod_dt:
                     resend_data = False
             except (UnicodeDecodeError, ValueError) as error:
-                print("ERROR", error)
+                pass
 
         if resend_data:
             try:
