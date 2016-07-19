@@ -8,7 +8,7 @@ except ImportError:
 
 
 def create_standard_request(url=b'/'):
-    from stormsurge.web import HTTPRequest
+    from stormhttp.web import HTTPRequest
     import httptools
     request = HTTPRequest()
     request.url = httptools.parse_url(url)
@@ -19,8 +19,8 @@ def create_standard_request(url=b'/'):
 class TestHTTPRouter(unittest.TestCase):
     def test_add_simple_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -35,8 +35,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_add_multiple_methods(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -57,8 +57,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_add_duplicate_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -70,8 +70,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_match_info_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -86,8 +86,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_match_info_duplicate_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -99,8 +99,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_add_long_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -114,8 +114,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_add_trailing_slash_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -129,8 +129,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_not_found_route_existing_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -144,7 +144,7 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_not_found_route_no_routes(self):
         async def main():
-            from stormsurge.router import Router
+            from stormhttp.router import Router
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -157,8 +157,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_not_allowed_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
@@ -173,8 +173,8 @@ class TestHTTPRouter(unittest.TestCase):
 
     def test_partial_route(self):
         async def main():
-            from stormsurge.router import Router
-            from stormsurge._endpoints import SimpleEndPoint
+            from stormhttp.router import Router
+            from stormhttp._endpoints import SimpleEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)

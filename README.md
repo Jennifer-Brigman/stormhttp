@@ -1,4 +1,4 @@
-# Stormsurge
+# stormhttp
 Performant asynchronous web application framework built on [httptools](https://github.com/MagicStack/httptools) for Python 3.5+
 
 ### Branches
@@ -6,19 +6,19 @@ Performant asynchronous web application framework built on [httptools](https://g
 ##### Master Branch
 Version `0.0.1 Alpha`
 
-[![Travis Master](https://img.shields.io/travis/SethMichaelLarson/Stormsurge/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/Stormsurge/branches)
-[![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/Stormsurge/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/Stormsurge?branch=master)
-[![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/Stormsurge.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/Stormsurge/requirements/?branch=develop)
+[![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
+[![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp?branch=master)
+[![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/stormhttp.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/stormhttp/requirements/?branch=develop)
 
 ##### Development Branch
 
-[![Travis Develop](https://img.shields.io/travis/SethMichaelLarson/Stormsurge/develop.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/Stormsurge/branches)
-[![Coveralls Develop](https://img.shields.io/coveralls/SethMichaelLarson/Stormsurge/develop.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/Stormsurge?branch=develop)
+[![Travis Develop](https://img.shields.io/travis/SethMichaelLarson/stormhttp/develop.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
+[![Coveralls Develop](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/develop.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp?branch=develop)
 
 ### Benchmarks
 Benchmarks both use `wrk -t250 -c500 -d30 http://127.0.0.1:5000` to create connections.
 
-##### Stormsurge
+##### stormhttp
 ```
 Running 30s test @ http://127.0.0.1:5000
   250 threads and 500 connections
@@ -31,7 +31,7 @@ Requests/sec:   3846.43
 Transfer/sec:    375.86MB
 ```
 
-#### Aiohttp
+#### aiohttp
 ```
 Running 30s test @ http://127.0.0.1:8080
   250 threads and 500 connections

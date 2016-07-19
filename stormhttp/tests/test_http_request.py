@@ -3,7 +3,7 @@ import unittest
 
 class TestHTTPRequest(unittest.TestCase):
     def test_create_request(self):
-        from stormsurge._http import HTTPRequest
+        from stormhttp._http import HTTPRequest
         request = HTTPRequest()
 
         request.version = b'1.1'
@@ -22,7 +22,7 @@ class TestHTTPRequest(unittest.TestCase):
         ])
 
     def test_parse_cookie_first(self):
-        from stormsurge._http import HTTPRequest
+        from stormhttp._http import HTTPRequest
         import httptools
         data = b'GET / HTTP/1.1\r\nAccept: text/html\r\nCookie: a=1;\r\n\r\n'
         request = HTTPRequest()
@@ -39,7 +39,7 @@ class TestHTTPRequest(unittest.TestCase):
         ])
 
     def test_http_parser(self):
-        from stormsurge._http import HTTPRequest
+        from stormhttp._http import HTTPRequest
         import httptools
 
         data = b'GET / HTTP/1.1\r\nAccept: text/html\r\nAccept-Encoding: utf-8\r\nCookie: a=1;\r\n\r\n'

@@ -1,15 +1,15 @@
 import asyncio
-import stormsurge
+import stormhttp
 import concurrent.futures
 
 
-class BenchmarkEndPoint(stormsurge.router.AbstractEndPoint):
+class BenchmarkEndPoint(stormhttp.router.AbstractEndPoint):
     def __init__(self, payload):
         self._payload = payload
         self._payload_len = b'%d' % len(self._payload)
 
-    async def on_request(self, loop: asyncio.AbstractEventLoop, request: stormsurge.web.HTTPRequest):
-        response = stormsurge.web.HTTPResponse()
+    async def on_request(self, loop: asyncio.AbstractEventLoop, request: stormhttp.web.HTTPRequest):
+        response = stormhttp.web.HTTPResponse()
         response.body = self._payload
         response.version = request.version
         response.headers[b'Content-Length'] = self._payload_len
@@ -22,8 +22,8 @@ if __name__ == "__main__":
         loop = uvloop.new_event_loop()
     except ImportError:
         loop = asyncio.new_event_loop()
-        
+
     loop.set_default_executor(concurrent.futures.ThreadPoolExecutor())
-    app = stormsurge.web.Application(loop)
-    app.router.add_endpoint(b'/', {b'GET'}, stormsurge.router.FileEndPoint(__file__))
-    stormsurge.web.run_app(app)
+    app = stormhttp.web.Application(loop)
+    app.router.add_endpoint(b'/', {b'GET'}, stormhttp.router.FileEndPoint(__file__))
+    stormhttp.web.run_app(app)
