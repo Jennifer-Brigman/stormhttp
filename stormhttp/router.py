@@ -35,21 +35,26 @@ class Router:
         """
         route_steps = route.split(b'/')[1:]
         current_node = self._prefix_tree
+
         for step in route_steps:
             if step == b'':
                 continue
+
             prefix_match = _PREFIX_MATCH_REGEX.match(step)
             if prefix_match is not None:
                 if _PREFIX_TREE_MATCH in current_node:
                     raise ValueError("Route {} has more than one match point.".format(route))
                 current_node[_PREFIX_TREE_MATCH] = prefix_match.groups()[0]
                 continue
+
             if step not in current_node:
                 current_node[step] = {}
             current_node = current_node[step]
+
         if _PREFIX_TREE_SENTINEL not in current_node:
             current_node[_PREFIX_TREE_SENTINEL] = {}
         current_node = current_node[_PREFIX_TREE_SENTINEL]
+
         for method in methods:
             if method in current_node:
                 raise ValueError("Route {} {} has more than one endpoint registered.".format(method, route))
@@ -101,8 +106,10 @@ class Router:
         """
         response = await self.route_request(request)
         should_close = request.headers.get(b'Connection', b'') != b'keep-alive'
+
         if should_close:
             response.headers[b'Connection'] = b'close'
+
         if b'Accept-Encoding' in request.headers and b'Content-Encoding' not in response.headers:
             encodings = self._sort_by_qvalue(request.headers[b'Accept-Encoding'])
             for enc in encodings:

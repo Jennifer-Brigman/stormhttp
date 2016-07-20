@@ -18,7 +18,7 @@ Version `0.0.1 Alpha`
 ### Benchmarks
 Benchmarks both use `wrk -t250 -c500 -d30 http://127.0.0.1:5000` to create connections.
 
-##### stormhttp
+#### stormhttp
 ```
 Running 30s test @ http://127.0.0.1:5000
   250 threads and 500 connections
