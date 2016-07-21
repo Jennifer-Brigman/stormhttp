@@ -64,7 +64,6 @@ class HTTPHeaders(collections.MutableMapping):
 
 class HTTPMessage:
     def __init__(self):
-        self.app = None
         self.headers = HTTPHeaders({})
         self.cookies = HTTPCookies(b'')
         self.url = None
@@ -194,6 +193,7 @@ class HTTPRequest(HTTPMessage):
     def __init__(self):
         HTTPMessage.__init__(self)
         self.match_info = {}
+        self.app = None
 
     def to_bytes(self) -> bytes:
         """
