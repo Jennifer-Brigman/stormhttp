@@ -1,10 +1,10 @@
 import asyncio
-import hashlib
-import os
 import re
 import socket
 import typing
 from ._http import *
+from ._endpoints import *
+from ._compress import *
 
 # Global Variables
 __all__ = [
@@ -12,56 +12,10 @@ __all__ = [
     "AbstractEndPoint",
     "FileEndPoint"
 ]
-_QVALUE_REGEX = re.compile(b'^\\s?([^;]+)(?:;q=(\\d\\.\\d)|;level=\\d+)+?$')
+_QVALUE_REGEX = re.compile(b'^\\s?([^;]+)\\s?(?:;\\s?q=(\\d\\.\\d)|;\\s?level=\\d+)*$')
+_PREFIX_MATCH_REGEX = re.compile(b'^\\{(.+)}$')
 _PREFIX_TREE_SENTINEL = b'///'
-
-
-class AbstractEndPoint:
-    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        raise NotImplementedError("AbstractEndPoint.on_request is not implemented.")
-
-
-class FileEndPoint(AbstractEndPoint):
-    def __init__(self, path: str):
-        AbstractEndPoint.__init__(self)
-        self._path = path
-        self._etag = None
-        self._mtime = None
-
-    def _file_modified(self) -> bool:
-        """
-        Checks to see if the file is modified
-        and if it has been changed by it's modify-time.
-        :return: None
-        """
-        try:
-            mtime = int(os.stat(self._path).st_mtime)
-            if self._mtime is not None and self._mtime > mtime:
-                return None
-            self._mtime = mtime
-            with open(self._path, "rb") as f:
-                payload = f.read()
-                self._etag = hashlib.sha1(payload).digest()
-                return payload
-        except OSError:
-            return None
-
-    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        try:
-            modified = await loop.run_in_executor(None, self._file_modified)
-            if modified is not None:
-                response = HTTPResponse()
-                response.version = request.version
-                response.cookies = request.cookies
-                response.body = modified
-                response.headers[b'Content-Length'] = b'%d' % (len(modified),)
-                return response
-            else:
-                return None
-        except OSError:
-            response = request.create_decorated_response()
-            response.status_code = 404
-            return response
+_PREFIX_TREE_MATCH = b'/*/'
 
 
 class Router:
@@ -81,15 +35,26 @@ class Router:
         """
         route_steps = route.split(b'/')[1:]
         current_node = self._prefix_tree
+
         for step in route_steps:
             if step == b'':
                 continue
+
+            prefix_match = _PREFIX_MATCH_REGEX.match(step)
+            if prefix_match is not None:
+                if _PREFIX_TREE_MATCH in current_node:
+                    raise ValueError("Route {} has more than one match point.".format(route))
+                current_node[_PREFIX_TREE_MATCH] = prefix_match.groups()[0]
+                continue
+
             if step not in current_node:
                 current_node[step] = {}
             current_node = current_node[step]
+
         if _PREFIX_TREE_SENTINEL not in current_node:
             current_node[_PREFIX_TREE_SENTINEL] = {}
         current_node = current_node[_PREFIX_TREE_SENTINEL]
+
         for method in methods:
             if method in current_node:
                 raise ValueError("Route {} {} has more than one endpoint registered.".format(method, route))
@@ -108,25 +73,26 @@ class Router:
                 continue  # This ensures that trailing / also routes to same place.
             if step in current_node:
                 current_node = current_node[step]
-            else:
-                response = request.create_decorated_response()
-                response.status_code = 404
-                return response
+                continue
+            elif _PREFIX_TREE_MATCH in current_node:
+                request.match_info[current_node[_PREFIX_TREE_MATCH]] = step
+                continue
+            return request.decorate_response(HTTPErrorResponse(404))
 
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]
             if request.method in current_node:
                 endpoint = current_node[request.method]
-                return await endpoint.on_request(self._loop, request)
+                try:
+                    return await endpoint.on_request(self._loop, request)
+                except Exception:
+                    return request.decorate_response(HTTPErrorResponse(500))
             else:
-                response = request.create_decorated_response()
-                response.status_code = 405
-                response.headers[b'Allow'] = b', '.join(current_node)
+                response = request.decorate_response(HTTPErrorResponse(405))
+                response.headers[b'Allow'] = b','.join(current_node)
                 return response
         else:
-            response = request.create_decorated_response()
-            response.status_code = 404
-            return response
+            return request.decorate_response(HTTPErrorResponse(404))
 
     async def process_request(self, client: socket.socket, request: HTTPRequest) -> None:
         """
@@ -137,8 +103,18 @@ class Router:
         """
         response = await self.route_request(request)
         should_close = request.headers.get(b'Connection', b'') != b'keep-alive'
+
         if should_close:
             response.headers[b'Connection'] = b'close'
+
+        if b'Accept-Encoding' in request.headers and b'Content-Encoding' not in response.headers:
+            encodings = self._sort_by_qvalue(request.headers[b'Accept-Encoding'])
+            for enc in encodings:
+                if enc in SUPPORTED_ENCODING_TYPES:
+                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body)
+                    response.headers[b'Content-Encoding'] = enc
+                    response.headers[b'Content-Length'] = b'%d' % (len(response.body),)
+                    break
         try:
             await self._loop.sock_sendall(client, response.to_bytes())
             if should_close:

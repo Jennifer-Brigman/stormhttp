@@ -38,6 +38,8 @@ class HTTPHeaders(collections.MutableMapping):
             if k.lower() == key.lower():
                 del self._headers[k]
                 break
+        else:
+            raise KeyError(str(key))
 
     def __len__(self) -> int:
         return len(self._headers)
@@ -110,7 +112,7 @@ class HTTPMessage:
             if name is not None:
                 if _buf_done or _buf is None:
                     if _buf == b'Cookie':
-                        _cookies.append(_headers[b'Cookie'])
+                        _cookies += _headers[b'Cookie']
                         del _headers[b'Cookie']
                     _buf = name
                     _buf_done = False
@@ -184,12 +186,13 @@ class HTTPResponse(HTTPMessage):
         if len(cookie_bytes) > 0:
             response_parts.append(cookie_bytes)
         response_parts.extend([b'', self.body])
-        return 'b\r\n'.join(response_parts)
+        return b'\r\n'.join(response_parts)
 
 
 class HTTPRequest(HTTPMessage):
     def __init__(self):
         HTTPMessage.__init__(self)
+        self.match_info = {}
 
     def to_bytes(self) -> bytes:
         """
@@ -204,6 +207,17 @@ class HTTPRequest(HTTPMessage):
             request_parts.append(self.cookies.to_bytes())
         request_parts.extend([b'', self.body])
         return b'\r\n'.join(request_parts)
+
+    def decorate_response(self, response: HTTPResponse) -> HTTPResponse:
+        """
+        Decorates a response with the required information that
+        the response needs from the HTTPRequest.
+        :param response: Response to decorate.
+        :return: Decorated response.
+        """
+        response.cookies = self.cookies
+        response.version = self.version
+        return response
 
 
 class HTTPErrorResponse(HTTPResponse):

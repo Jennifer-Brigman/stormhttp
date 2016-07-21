@@ -1,6 +1,6 @@
 from distutils.core import setup
 from setuptools.command.test import test
-from stormsurge import __version__
+from stormhttp import __version__
 
 
 class PyTest(test):
@@ -16,8 +16,8 @@ class PyTest(test):
         sys.exit(errno)
 
 setup(
-    name="stormsurge",
-    packages=["stormsurge"],
+    name="stormhttp",
+    packages=["stormhttp"],
     version=__version__,
     description="Performant asynchronous web application framework.",
     license="Apache 2",
@@ -40,6 +40,11 @@ setup(
         "cffi==1.7.0",
         "httptools==0.0.9",
         "pycparser==2.14"
+    ],
+    tests_require=[
+        "pytest",
+        "coverage",
+        "coveralls"
     ],
     cmdclass={
         "test": PyTest

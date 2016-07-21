@@ -5,11 +5,13 @@ import zlib
 
 # Global Variables
 __all__ = [
-    "compress_bytes"
+    "encode_bytes",
+    "SUPPORTED_ENCODING_TYPES"
 ]
+SUPPORTED_ENCODING_TYPES = {b'identity', b'gzip', b'deflate', b'br'}
 
 
-def compress_bytes(algorithm: bytes, content: bytes) -> bytes:
+def encode_bytes(algorithm: bytes, content: bytes) -> bytes:
     """
     Compresses bytes given an algorithm.
     :param algorithm: Algorithm to compress bytes using.
