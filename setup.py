@@ -23,8 +23,8 @@ setup(
     license="Apache 2",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
-    url="https://github.com/SethMichaelLarson/Stormsurge",
-    download_url="https://github.com/SethMichaelLarson/Stormsurge/tarball/" + __version__,
+    url="https://github.com/SethMichaelLarson/stormhttp",
+    download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + __version__,
     keywords=["web", "framework", "async"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
