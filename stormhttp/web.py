@@ -14,8 +14,8 @@ __all__ = [
 
 class Application:
     def __init__(self, loop: asyncio.AbstractEventLoop):
-        self._loop = loop
-        self.router = Router(self._loop)
+        self.loop = loop
+        self.router = Router(self.loop)
 
     async def listen_to_client(self, client: socket.socket) -> None:
         """
@@ -36,7 +36,7 @@ class Application:
                     request_parser = httptools.HttpRequestParser(request)
                     while not request.is_complete():
                         try:
-                            data = await self._loop.sock_recv(client, 102400)
+                            data = await self.loop.sock_recv(client, 102400)
                         except OSError:
                             client.close()
                             return
@@ -58,7 +58,15 @@ class Application:
             return
 
 
-def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl: typing.Union[ssl.SSLContext, None]=None) -> None:
+def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl_context: typing.Optional[ssl.SSLContext]=None, **kwargs) -> None:
+    """
+    Runs an Application object as an asyncio server.
+    :param app: Application to run.
+    :param host: Host address to bind to.
+    :param port: Port to bind to.
+    :param ssl_context: Optional SSLContext object.
+    :return: None
+    """
     async def _connect_loop(_loop: asyncio.AbstractEventLoop) -> None:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setblocking(False)
@@ -68,11 +76,17 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl: typing.U
             pass
 
         server.bind((host, port))
-        server.listen(512)
+        server.listen(kwargs.get("backlog", 512))
         while True:
             client, _ = await _loop.sock_accept(server)
             _loop.create_task(app.listen_to_client(client))
 
-    loop = app._loop
+    scheme = "http"
+    if ssl_context is not None:
+        scheme = "https"
+    print("======== Running on {}://{}:{}/ ========".format(scheme, host, port))
+    print("(Press CTRL+C to quit)")
+
+    loop = app.loop
     loop.run_until_complete(_connect_loop(loop))
     loop.run_forever()

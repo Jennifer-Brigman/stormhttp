@@ -21,7 +21,7 @@ install:
   - "if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop; fi"
 
 script:
-  - "coverage run --source=stormsurge setup.py test"
+  - "coverage run --source=stormhttp setup.py test"
 
 after_success:
   - "coveralls"
