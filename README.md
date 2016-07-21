@@ -1,19 +1,11 @@
 # stormhttp
 Performant asynchronous web application framework built on [httptools](https://github.com/MagicStack/httptools) for Python 3.5+
 
-### Branches
-
-##### Master Branch
 Version `0.0.1 Alpha`
 
 [![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
 [![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp?branch=master)
 [![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/stormhttp.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/stormhttp/requirements/?branch=develop)
-
-##### Development Branch
-
-[![Travis Develop](https://img.shields.io/travis/SethMichaelLarson/stormhttp/develop.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
-[![Coveralls Develop](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/develop.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp?branch=develop)
 
 ### Benchmarks
 Benchmarks both use `wrk -t250 -c500 -d30 http://127.0.0.1:5000` to create connections.
