@@ -33,6 +33,7 @@ class Application(dict):
         try:
             while True:
                 request = HTTPRequest()
+                request.app = self
                 try:
                     request_parser = httptools.HttpRequestParser(request)
                     while not request.is_complete():
