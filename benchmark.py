@@ -1,6 +1,8 @@
 import asyncio
-import stormhttp
 import concurrent.futures
+import ssl
+import sys
+import stormhttp
 
 
 class BenchmarkEndPoint(stormhttp.router.AbstractEndPoint):
@@ -29,4 +31,8 @@ if __name__ == "__main__":
     loop.set_default_executor(concurrent.futures.ThreadPoolExecutor())
     app = stormhttp.web.Application(loop)
     app.router.add_endpoint(b'/', {b'GET'}, BenchmarkEndPoint(b'a' * (1024 * 100)))
-    stormhttp.web.run_app(app)
+
+    ssl_context = None
+    if "--ssl" in sys.argv:
+        ssl_context = ssl.create_default_context(cafile="server.crt")
+    stormhttp.web.run_app(app, ssl_context=ssl_context)

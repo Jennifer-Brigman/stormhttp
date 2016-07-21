@@ -58,7 +58,7 @@ class Application:
             return
 
 
-def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl_context: typing.Optional[ssl.SSLContext]=None) -> None:
+def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None) -> None:
     """
     Runs an Application object as an asyncio server.
     :param app: Application to run.
@@ -69,6 +69,9 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl_context: 
     """
     async def _connect_loop(_loop: asyncio.AbstractEventLoop) -> None:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print(ssl_context)
+        if ssl_context is not None:
+            ssl_context.wrap_socket(server)
         server.setblocking(False)
         try:  # Try to reuse the address, not available on all systems.
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
