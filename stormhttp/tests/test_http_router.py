@@ -20,11 +20,11 @@ class TestHTTPRouter(unittest.TestCase):
     def test_add_simple_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/', {b'GET'}, SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/', {b'GET'}, ConstantEndPoint(b'test'))
             request = create_standard_request()
 
             response = await router.route_request(request)
@@ -36,11 +36,11 @@ class TestHTTPRouter(unittest.TestCase):
     def test_add_multiple_methods(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/', {b'GET', b'POST'}, SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/', {b'GET', b'POST'}, ConstantEndPoint(b'test'))
             request = create_standard_request()
 
             response = await router.route_request(request)
@@ -58,24 +58,24 @@ class TestHTTPRouter(unittest.TestCase):
     def test_add_duplicate_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/', {b'GET'}, SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/', {b'GET'}, ConstantEndPoint(b'test'))
             with self.assertRaises(ValueError):
-                router.add_endpoint(b'/', {b'GET'}, SimpleEndPoint(b'test'))
+                router.add_endpoint(b'/', {b'GET'}, ConstantEndPoint(b'test'))
 
         asyncio.get_event_loop().run_until_complete(main())
 
     def test_match_info_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/{a}', {b'GET'}, SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/{a}', {b'GET'}, ConstantEndPoint(b'test'))
 
             request = create_standard_request(b'/1')
             await router.route_request(request)
@@ -87,24 +87,24 @@ class TestHTTPRouter(unittest.TestCase):
     def test_match_info_duplicate_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/{a}', {b'GET'}, SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/{a}', {b'GET'}, ConstantEndPoint(b'test'))
             with self.assertRaises(ValueError):
-                router.add_endpoint(b'/{a}', {b'GET'}, SimpleEndPoint(b'test'))
+                router.add_endpoint(b'/{a}', {b'GET'}, ConstantEndPoint(b'test'))
 
         asyncio.get_event_loop().run_until_complete(main())
 
     def test_add_long_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/a/b/c/d/e', [b'GET'], SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/a/b/c/d/e', [b'GET'], ConstantEndPoint(b'test'))
 
             request = create_standard_request(b'/a/b/c/d/e')
             response = await router.route_request(request)
@@ -115,11 +115,11 @@ class TestHTTPRouter(unittest.TestCase):
     def test_add_trailing_slash_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/a/b/c/d/e/', [b'GET'], SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/a/b/c/d/e/', [b'GET'], ConstantEndPoint(b'test'))
 
             request = create_standard_request(b'/a/b/c/d/e')
             response = await router.route_request(request)
@@ -130,11 +130,11 @@ class TestHTTPRouter(unittest.TestCase):
     def test_not_found_route_existing_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/a', [b'GET'], SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/a', [b'GET'], ConstantEndPoint(b'test'))
 
             request = create_standard_request(b'/b')
             response = await router.route_request(request)
@@ -158,11 +158,11 @@ class TestHTTPRouter(unittest.TestCase):
     def test_not_allowed_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/a', [b'POST', b'HEAD'], SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/a', [b'POST', b'HEAD'], ConstantEndPoint(b'test'))
 
             request = create_standard_request(b'/a')
             response = await router.route_request(request)
@@ -174,11 +174,11 @@ class TestHTTPRouter(unittest.TestCase):
     def test_partial_route(self):
         async def main():
             from stormhttp.router import Router
-            from stormhttp._endpoints import SimpleEndPoint
+            from stormhttp._endpoints import ConstantEndPoint
 
             loop = asyncio.get_event_loop()
             router = Router(loop)
-            router.add_endpoint(b'/a/b/c', [b'GET'], SimpleEndPoint(b'test'))
+            router.add_endpoint(b'/a/b/c', [b'GET'], ConstantEndPoint(b'test'))
 
             request = create_standard_request(b'/a/b')
             response = await router.route_request(request)

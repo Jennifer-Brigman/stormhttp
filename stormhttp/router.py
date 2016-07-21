@@ -77,25 +77,22 @@ class Router:
             elif _PREFIX_TREE_MATCH in current_node:
                 request.match_info[current_node[_PREFIX_TREE_MATCH]] = step
                 continue
-
-            response = request.decorate_response(HTTPResponse())
-            response.status_code = 404
-            return response
+            return request.decorate_response(HTTPErrorResponse(404))
 
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]
             if request.method in current_node:
                 endpoint = current_node[request.method]
-                return await endpoint.on_request(self._loop, request)
+                try:
+                    return await endpoint.on_request(self._loop, request)
+                except Exception:
+                    return request.decorate_response(HTTPErrorResponse(500))
             else:
-                response = request.decorate_response(HTTPResponse())
-                response.status_code = 405
+                response = request.decorate_response(HTTPErrorResponse(405))
                 response.headers[b'Allow'] = b','.join(current_node)
                 return response
         else:
-            response = request.decorate_response(HTTPResponse())
-            response.status_code = 404
-            return response
+            return request.decorate_response(HTTPErrorResponse(404))
 
     async def process_request(self, client: socket.socket, request: HTTPRequest) -> None:
         """

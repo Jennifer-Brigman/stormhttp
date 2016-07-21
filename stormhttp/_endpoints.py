@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import os
 import typing
+import types
 from ._constants import HTTP_DATETIME_FORMAT
 from ._http import *
 from ._mimetype import EXTENSION_TO_MIMETYPE
@@ -19,16 +20,34 @@ class AbstractEndPoint:
         raise NotImplementedError("AbstractEndPoint.on_request is not implemented.")
 
 
-class SimpleEndPoint(AbstractEndPoint):
-    def __init__(self, payload: bytes):
+class ConstantEndPoint(AbstractEndPoint):
+    def __init__(self, payload: bytes, content_type: bytes=b'text/html', content_charset: bytes=b'utf-8'):
         AbstractEndPoint.__init__(self)
         self._payload = payload
+        self._content_type = b'%b; charset=%b' % (content_type, content_charset)
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
         response = HTTPResponse()
         response.cookies = request.cookies
         response.body = self._payload
-        response.headers[b'Content-Type'] = b'text/plain; charset=utf-8'
+        response.headers[b'Content-Type'] = self._content_type
+        return response
+
+
+class EndPoint(AbstractEndPoint):
+    def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, HTTPResponse]],
+                 content_type: bytes=b'text/html', content_charset: bytes=b'utf-8', cache_length: int=0):
+        AbstractEndPoint.__init__(self)
+        self._handler = handler
+        self._content_type = b'%b; charset=%b' % (content_type, content_charset)
+
+    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
+        if asyncio.iscoroutinefunction(self._handler):
+            response = await self._handler(request)
+        else:
+            response = self._handler(request)
+
+        response.headers[b'Content-Type'] = self._content_type
         return response
 
 
