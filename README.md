@@ -1,18 +1,16 @@
 # stormhttp
 Performant asynchronous web application framework built on [httptools](https://github.com/MagicStack/httptools) for Python 3.5+
 
-Version `0.0.3 Alpha`
-
 [![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
-[![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp?branch=master)
-[![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/stormhttp.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/stormhttp/requirements/?branch=develop)
+[![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp)
+[![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/stormhttp.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/stormhttp/requirements)
 
 ### Benchmarks
 Benchmarks both use `wrk -t250 -c500 -d30 http://127.0.0.1:5000` to create connections.
 
 #### stormhttp
 ```
-Running 30s test @ http://127.0.0.1:5000
+Running 30s test @ http://127.0.0.1:8080
   250 threads and 500 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
     Latency    38.70ms   59.16ms   1.79s    98.92%

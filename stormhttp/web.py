@@ -60,7 +60,7 @@ class Application(dict):
             return
 
 
-def run_app(app: Application, host: str="0.0.0.0", port: int=5000, ssl_context: typing.Optional[ssl.SSLContext]=None, **kwargs) -> None:
+def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None, **kwargs) -> None:
     """
     Runs an Application object as an asyncio server.
     :param app: Application to run.
