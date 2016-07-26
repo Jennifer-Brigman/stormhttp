@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import hashlib
+import json
 import os
 import typing
 import types
@@ -11,7 +12,10 @@ from ._mimetype import EXTENSION_TO_MIMETYPE
 # Global Variables
 __all__ = [
     "AbstractEndPoint",
-    "FileEndPoint"
+    "FileEndPoint",
+    "JSONEndPoint",
+    "ConstantEndPoint",
+    "EndPoint"
 ]
 
 
@@ -49,6 +53,27 @@ class EndPoint(AbstractEndPoint):
 
         response.headers[b'Content-Type'] = self._content_type
         return response
+
+
+class JSONEndPoint(AbstractEndPoint):
+    def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, typing.Mapping, typing.List]]):
+        AbstractEndPoint.__init__(self)
+        self._handler = handler
+
+    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
+        response = request.decorate_response(HTTPResponse())
+        if asyncio.iscoroutinefunction(self._handler):
+            response_json = await self._handler(request)
+        else:
+            response_json = self._handler(request)
+        try:
+            response.body = json.dumps(response_json).encode("utf-8")
+            response.headers[b'Content-Type'] = b'application/json; charset=utf-8'
+            response.status_code = 200
+            return response
+        except TypeError:
+            response.status_code = 500
+            return response
 
 
 class FileEndPoint(AbstractEndPoint):
