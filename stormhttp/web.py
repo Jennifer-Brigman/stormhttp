@@ -14,7 +14,7 @@ __all__ = [
 
 class Application(dict):
     def __init__(self, loop: asyncio.AbstractEventLoop):
-        dict.__init__(self)
+        dict.__init__({})
         self.loop = loop
         self.router = Router(self.loop)
 
