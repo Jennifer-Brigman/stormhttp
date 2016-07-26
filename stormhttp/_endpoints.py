@@ -36,7 +36,7 @@ class ConstantEndPoint(AbstractEndPoint):
 
 class EndPoint(AbstractEndPoint):
     def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, HTTPResponse]],
-                 content_type: bytes=b'text/html', content_charset: bytes=b'utf-8', cache_length: int=0):
+                 content_type: bytes=b'text/html', content_charset: bytes=b'utf-8'):
         AbstractEndPoint.__init__(self)
         self._handler = handler
         self._content_type = b'%b; charset=%b' % (content_type, content_charset)
