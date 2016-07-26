@@ -32,5 +32,5 @@ deploy:
   password:
     secure: ceo67vscdCH7k8isDrbSHsnyPeYGbm4Xnba6SPPb0Rg27zZDmCw0V21DV4JyMEKgeuzOcCwnTQ5H/8fPSR2SpwU0UelVXOxi9xywqsy0RIOKmlc288CUlVxqSV5pnhXgRwh00InqePKpONApbLhuxPWP+2p+K9tR++prLwvuKcObLE/DOuWQy6rQRqCOgOiSLilXc2SJio7Po7gknpC301u3s2mRbZjFeyL1L3Hj/0/WkPznpNG6jA8tgdh5CRVON3iLHwLyCWCzr/is07nfkQ5e/qsxbsion3BU8BFOwQQptKjZHMPoairQ6B+Uu+idFyLtY6q0D85IfVW057zbuDY+5Wfb4QajSbH6SX7OWOHsXHTStwRMoh6n0IPkt+K+1HyfnS//mJC80GXcjaSTliQT7Af3QRXZ4P4p2Iwn5MHSad28wN4BaFwS49xiAf2yQJgugb2t+6VSSbkdrhdUgMRPjeysO0NXhDAjH0SjPqvjtMsW2ucM/ngm/He6yySljSWhd2j4bqOYD5XOvQaTK1/0ih/x4aHkXgm1BQ7UDP4JfqT8KHjnA6duwxDI7/tPPLTxaj7soClz2dWcBPs+JJBYmdHGfKkd0j9qLeuJ4yC2UGNbwPsnMs2HgMlUjLkk/AxfExjHYMupEfY+8VpifZSfIQJcAA+BBkmHycdkyEA=
   on:
-    tags: true
+    tags: false
     branch: master
