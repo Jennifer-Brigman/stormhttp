@@ -3,7 +3,7 @@ import stormhttp
 import concurrent.futures
 
 
-class BenchmarkEndPoint(stormhttp.router.AbstractEndPoint):
+class BenchmarkEndPoint(stormhttp.web.AbstractEndPoint):
     def __init__(self, payload):
         self._payload = payload
         self._payload_len = b'%d' % len(self._payload)

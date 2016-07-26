@@ -15,10 +15,8 @@
 __version__ = '0.0.6'
 __all__ = [
     "web",
-    "router",
     "ext"
 ]
 
 from . import ext
 from . import web
-from . import router
