@@ -25,3 +25,11 @@ script:
 
 after_success:
   - "coveralls"
+
+deploy:
+  provider: pypi
+  user: SethMichaelLarson
+  password: fakepassword
+  on:
+    tags: true
+    branch: master
