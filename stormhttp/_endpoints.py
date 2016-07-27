@@ -31,8 +31,7 @@ class ConstantEndPoint(AbstractEndPoint):
         self._content_type = b'%b; charset=%b' % (content_type, content_charset)
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        response = HTTPResponse()
-        response.cookies = request.cookies
+        response = request.decorate_response(HTTPResponse())
         response.body = self._payload
         response.headers[b'Content-Type'] = self._content_type
         return response

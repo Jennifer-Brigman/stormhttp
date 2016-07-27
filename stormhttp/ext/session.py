@@ -8,10 +8,45 @@ import stormhttp
 
 
 __all__ = [
-    "setup"
+    "setup",
+    "Session",
+    "AbstractStorage",
+    "SimpleStorage",
+    "EncryptedFernetStorage"
 ]
-_APP_KEY = "stormhttp_sessions_env"
-_COOKIE_NAME = b"_stormhttp_session"
+_COOKIE_NAME = b'_stormhttp_session'
+
+
+class Session(dict):
+    def __init__(self, identity, data: dict):
+        dict.__init__({})
+        self._identity = identity
+        self._changed = False
+        self._mapping = data
+
+    def expire_session(self):
+        self._changed = True
+        self._mapping = {}
+
+    def __len__(self):
+        return len(self._mapping)
+
+    def __iter__(self):
+        return iter(self._mapping)
+
+    def __contains__(self, key):
+        return key in self._mapping
+
+    def __getitem__(self, key):
+        return self._mapping[key]
+
+    def __setitem__(self, key, value):
+        self._mapping[key] = value
+        self._changed = True
+
+    def __delitem__(self, key):
+        del self._mapping[key]
+        self._changed = True
 
 
 class AbstractStorage:
@@ -93,43 +128,6 @@ class EncryptedFernetStorage(AbstractStorage):
             self.save_cookie(response, self._fernet.encrypt(json.dumps(session).decode("utf-8")))
 
 
-class Session(collections.MutableMapping):
-    def __init__(self, identity, data: typing.Mapping[str, str]):
-        self._mapping = {}
-        self._identity = identity
-        self._created = data.get("created", None)
-        self._changed = False
-        if self._created is None:
-            self._created = datetime.datetime.now()
-        else:
-            self._created = datetime.datetime.fromtimestamp(self._created)
-        self._mapping.update(data.get("session", {}))
-
-    def expire_session(self):
-        self._changed = True
-        self._mapping = {}
-
-    def __len__(self):
-        return len(self._mapping)
-
-    def __iter__(self):
-        return iter(self._mapping)
-
-    def __contains__(self, key):
-        return key in self._mapping
-
-    def __getitem__(self, key):
-        return self._mapping[key]
-
-    def __setitem__(self, key, value):
-        self._mapping[key] = value
-        self._changed = True
-
-    def __delitem__(self, key):
-        del self._mapping[key]
-        self._changed = True
-
-
 def setup(app: stormhttp.web.Application, storage: AbstractStorage) -> None:
     """
     Registers the sessions middleware with the Application.
@@ -148,7 +146,7 @@ class SessionMiddleware(stormhttp.web.AbstractMiddleware):
         self._kwargs = kwargs
 
     async def on_request(self, request: stormhttp.web.HTTPRequest) -> None:
-        request.session = self._storage.load_session(request)
+        request.session = await self._storage.load_session(request)
 
     async def on_response(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse):
-        self._storage.save_session(request, response, request.session)
+        await self._storage.save_session(request, response, request.session)
