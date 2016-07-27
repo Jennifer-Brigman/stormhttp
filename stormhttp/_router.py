@@ -23,7 +23,7 @@ class Router:
         self._prefix_tree = {}
         self._loop = loop
 
-    def add_endpoint(self, route: bytes, methods: typing.List[bytes], endpoint: AbstractEndPoint) -> None:
+    def add_endpoint(self, route: bytes, methods: typing.Container[bytes], endpoint: AbstractEndPoint) -> None:
         """
         Adds a single EndPoint to the prefix tree, possibly in multiple locations
         if there are multiple methods in the same route. An error is raised if there
