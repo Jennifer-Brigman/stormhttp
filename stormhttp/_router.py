@@ -84,7 +84,12 @@ class Router:
             if request.method in current_node:
                 endpoint = current_node[request.method]
                 try:
-                    return await endpoint.on_request(self._loop, request)
+                    for middleware in request.app.middlewares:
+                        await middleware.on_request(request)
+                    response = await endpoint.on_request(self._loop, request)
+                    for middleware in request.app.middlewares:
+                        await middleware.on_response(request, response)
+                    return response
                 except Exception:
                     return request.decorate_response(HTTPErrorResponse(500))
             else:
