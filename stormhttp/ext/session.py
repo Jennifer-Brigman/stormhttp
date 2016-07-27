@@ -2,7 +2,7 @@ import base64
 import collections
 import cryptography.fernet
 import datetime
-import json
+import ultrajson as json
 import typing
 import stormhttp
 
@@ -110,21 +110,25 @@ class Session(collections.MutableMapping):
         self._changed = True
 
 
-def setup(app: stormhttp.web.Application, storage_type: type(AbstractStorage)) -> None:
+def setup(app: stormhttp.web.Application, storage: AbstractStorage) -> None:
     """
     Registers the sessions middleware with the Application.
     :param app: Application to register the session with.
+    :param storage: Storage to use for
     :return: None
     """
-    app.add_middleware(SessionMiddleware(storage_type))
+    app.add_middleware(SessionMiddleware(storage))
 
 
 class SessionMiddleware(stormhttp.web.AbstractMiddleware):
-    def __init__(self, storage_type: type(AbstractStorage), *args, **kwargs):
+    def __init__(self, storage: AbstractStorage, *args, **kwargs):
         stormhttp.web.AbstractMiddleware.__init__(self)
-        self._storage_type = storage_type
+        self._storage = storage
         self._args = args
         self._kwargs = kwargs
 
     async def on_request(self, request: stormhttp.web.HTTPRequest) -> None:
-        if _COOKIE_NAME in request.cookies:
+        request.session = self._storage.load_session(request)
+
+    async def on_response(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse):
+        self._storage.save_session(request, response, request.session)
