@@ -46,6 +46,26 @@ class AbstractStorage:
             )
 
 
+class SimpleStorage(AbstractStorage):
+    def __init__(self, cookie_name: bytes=_COOKIE_NAME,
+                 domain: typing.Optional[bytes]=None, max_age: typing.Optional[int]=None,
+                 path: typing.Optional[bytes]=b'/', secure: bool=True, http_only: bool=True):
+        AbstractStorage.__init__(self, cookie_name, domain, max_age, path, secure, http_only)
+
+    async def load_session(self, request: stormhttp.web.HTTPRequest) -> Session:
+        cookie = self.load_cookie(request)
+        if cookie is None:
+            return Session(None, data={})
+        else:
+            try:
+                return Session(None, data=json.loads(cookie.decode("utf-8")))
+            except (ValueError, UnicodeDecodeError):
+                return Session(None, data={})
+
+    async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
+        self.save_cookie(response, json.dumps(session).encode("utf-8"))
+
+
 class EncryptedFernetStorage(AbstractStorage):
     def __init__(self, secret_key: typing.Union[str, bytes], cookie_name: bytes=_COOKIE_NAME,
                  domain: typing.Optional[bytes]=None, max_age: typing.Optional[int]=None,
@@ -55,7 +75,7 @@ class EncryptedFernetStorage(AbstractStorage):
             secret_key = base64.urlsafe_b64encode(secret_key)
         self._fernet = cryptography.fernet.Fernet(secret_key)
 
-    async def load_session(self, request) -> Session:
+    async def load_session(self, request: stormhttp.web.HTTPRequest) -> Session:
         cookie = self.load_cookie(request)
         if cookie is None:
             return Session(None, {})
