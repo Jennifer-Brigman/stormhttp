@@ -1,5 +1,8 @@
+import base64
 import collections
+import cryptography.fernet
 import datetime
+import json
 import typing
 import stormhttp
 
@@ -14,7 +17,7 @@ _COOKIE_NAME = b"_stormhttp_session"
 class AbstractStorage:
     def __init__(self, cookie_name: bytes=_COOKIE_NAME, domain: typing.Optional[bytes]=None,
                  max_age: typing.Optional[int]=None, path: typing.Optional[bytes]=b'/',
-                 secure: bool=True, http_only: bool=False):
+                 secure: bool=True, http_only: bool=True):
         self._cookie_name = cookie_name
         self._domain = domain
         self._max_age = max_age
@@ -22,13 +25,13 @@ class AbstractStorage:
         self._secure = secure
         self._http_only = http_only
 
-    async def load_session(self):
+    async def load_session(self, request: stormhttp.web.HTTPRequest) -> Session:
         raise NotImplementedError("AbstractStorage.load_session() is not implemented.")
 
-    async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session:):
+    async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
         raise NotImplementedError("AbstractStorage.save_session() is not implemented.")
 
-    def load_cookie(self, request: stormhttp.web.HTTPRequest) -> None:
+    def load_cookie(self, request: stormhttp.web.HTTPRequest) -> typing.Optional[bytes]:
         cookie = request.cookies.get(self._cookie_name, None)
         return cookie
 
@@ -43,8 +46,35 @@ class AbstractStorage:
             )
 
 
+class EncryptedFernetStorage(AbstractStorage):
+    def __init__(self, secret_key: typing.Union[str, bytes], cookie_name: bytes=_COOKIE_NAME,
+                 domain: typing.Optional[bytes]=None, max_age: typing.Optional[int]=None,
+                 path: typing.Optional[bytes]=b'/', secure: bool=True, http_only: bool=True):
+        AbstractStorage.__init__(self, cookie_name, domain, max_age, path, secure, http_only)
+        if isinstance(secret_key, bytes):
+            secret_key = base64.urlsafe_b64encode(secret_key)
+        self._fernet = cryptography.fernet.Fernet(secret_key)
+
+    async def load_session(self, request) -> Session:
+        cookie = self.load_cookie(request)
+        if cookie is None:
+            return Session(None, {})
+        else:
+            try:
+                data = json.loads(self._fernet.decrypt(cookie).decode("utf-8"), encoding="utf-8")
+                return Session(None, data)
+            except cryptography.fernet.InvalidToken:
+                return Session(None, {})
+
+    async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
+        if len(session) == 0:
+            self.save_cookie(response, b'')
+        else:
+            self.save_cookie(response, self._fernet.encrypt(json.dumps(session).decode("utf-8")))
+
+
 class Session(collections.MutableMapping):
-    def __init__(self, identity, data: typing.Mapping[bytes, bytes]):
+    def __init__(self, identity, data: typing.Mapping[str, str]):
         self._mapping = {}
         self._identity = identity
         self._created = data.get("created", None)
