@@ -5,25 +5,25 @@ class TestHTTPResponse(unittest.TestCase):
     def test_create_response(self):
         from stormhttp._http import HTTPResponse
         response = HTTPResponse()
-        response.version = b'1.1'
+        response.version = '1.1'
         response.status_code = 200
-        response.body = b'test'
+        response.body = 'test'
         self.assertEqual(response.to_bytes(), b'HTTP/1.1 200 OK\r\n\r\ntest')
 
-        response.headers[b'Content-Encoding'] = b'gzip'
+        response.headers['Content-Encoding'] = 'gzip'
         self.assertEqual(response.to_bytes(), b'HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\n\r\ntest')
 
     def test_cookies_response(self):
         from stormhttp._http import HTTPResponse
         from stormhttp._cookies import HTTPCookies
         response = HTTPResponse()
-        response.version = b'1.1'
+        response.version = '1.1'
         response.status_code = 200
-        response.body = b'test'
+        response.body = 'test'
         response.cookies = HTTPCookies(b'a=1;')
         self.assertEqual(response.to_bytes(), b'HTTP/1.1 200 OK\r\n\r\ntest')
 
-        response.cookies[b'a'] = b'2'
+        response.cookies['a'] = '2'
         self.assertEqual(response.to_bytes(), b'HTTP/1.1 200 OK\r\nSet-Cookie: a=2;\r\n\r\ntest')
 
     def test_response_invalid_status(self):

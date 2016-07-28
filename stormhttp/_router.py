@@ -12,10 +12,10 @@ __all__ = [
     "AbstractEndPoint",
     "FileEndPoint"
 ]
-_QVALUE_REGEX = re.compile(b'^\\s?([^;]+)\\s?(?:;\\s?q=(\\d\\.\\d)|;\\s?level=\\d+)*$')
-_PREFIX_MATCH_REGEX = re.compile(b'^\\{(.+)}$')
-_PREFIX_TREE_SENTINEL = b'///'
-_PREFIX_TREE_MATCH = b'/*/'
+_QVALUE_REGEX = re.compile(r'^\s?([^;]+)\s?(?:;\s?q=(\d\.\d)|;\s?level=\d+)*$')
+_PREFIX_MATCH_REGEX = re.compile(r'^\{(.+)\}$')
+_PREFIX_TREE_SENTINEL = '///'
+_PREFIX_TREE_MATCH = '/*/'
 
 
 class Router:
@@ -23,7 +23,7 @@ class Router:
         self._prefix_tree = {}
         self._loop = loop
 
-    def add_endpoint(self, route: bytes, methods: typing.List[bytes], endpoint: AbstractEndPoint) -> None:
+    def add_endpoint(self, route: str, methods: typing.Iterable[str], endpoint: AbstractEndPoint) -> None:
         """
         Adds a single EndPoint to the prefix tree, possibly in multiple locations
         if there are multiple methods in the same route. An error is raised if there
@@ -33,11 +33,11 @@ class Router:
         :param endpoint: EndPoint object to add to the tree.
         :return: None
         """
-        route_steps = route.split(b'/')[1:]
+        route_steps = route.split('/')[1:]
         current_node = self._prefix_tree
 
         for step in route_steps:
-            if step == b'':
+            if step == '':
                 continue
 
             prefix_match = _PREFIX_MATCH_REGEX.match(step)
@@ -66,10 +66,10 @@ class Router:
         :param request: Request to route to an endpoint.
         :return: HTTPResponse to the request.
         """
-        route_steps = request.url.path.split(b'/')[1:]
+        route_steps = request.url.path.decode("utf-8").split('/')[1:]
         current_node = self._prefix_tree
         for step in route_steps:
-            if step == b'':
+            if step == '':
                 continue  # This ensures that trailing / also routes to same place.
             if step in current_node:
                 current_node = current_node[step]
@@ -77,25 +77,28 @@ class Router:
             elif _PREFIX_TREE_MATCH in current_node:
                 request.match_info[current_node[_PREFIX_TREE_MATCH]] = step
                 continue
-
-            response = request.decorate_response(HTTPResponse())
-            response.status_code = 404
-            return response
+            return request.decorate_response(HTTPErrorResponse(404))
 
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]
             if request.method in current_node:
                 endpoint = current_node[request.method]
-                return await endpoint.on_request(self._loop, request)
+                try:
+                    for middleware in request.app.middlewares if request.app is not None else []:
+                        await middleware.on_request(request)
+                    response = await endpoint.on_request(self._loop, request)
+                    for middleware in request.app.middlewares if request.app is not None else []:
+                        await middleware.on_response(request, response)
+                    return response
+                except Exception as err:
+                    print(str(err))
+                    return request.decorate_response(HTTPErrorResponse(500))
             else:
-                response = request.decorate_response(HTTPResponse())
-                response.status_code = 405
-                response.headers[b'Allow'] = b','.join(current_node)
+                response = request.decorate_response(HTTPErrorResponse(405))
+                response.headers["Allow"] = ",".join(current_node)
                 return response
         else:
-            response = request.decorate_response(HTTPResponse())
-            response.status_code = 404
-            return response
+            return request.decorate_response(HTTPErrorResponse(404))
 
     async def process_request(self, client: socket.socket, request: HTTPRequest) -> None:
         """
@@ -105,18 +108,18 @@ class Router:
         :return: None
         """
         response = await self.route_request(request)
-        should_close = request.headers.get(b'Connection', b'') != b'keep-alive'
+        should_close = request.headers.get('Connection', '') != 'keep-alive'
 
         if should_close:
-            response.headers[b'Connection'] = b'close'
+            response.headers['Connection'] = 'close'
 
-        if b'Accept-Encoding' in request.headers and b'Content-Encoding' not in response.headers:
-            encodings = self._sort_by_qvalue(request.headers[b'Accept-Encoding'])
+        if 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers:
+            encodings = self._sort_by_qvalue(request.headers['Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
-                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body)
-                    response.headers[b'Content-Encoding'] = enc
-                    response.headers[b'Content-Length'] = b'%d' % (len(response.body),)
+                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body.encode("utf-8"))
+                    response.headers['Content-Encoding'] = enc
+                    response.headers['Content-Length'] = str(len(response.body),)
                     break
         try:
             await self._loop.sock_sendall(client, response.to_bytes())
@@ -126,7 +129,7 @@ class Router:
             pass
 
     @staticmethod
-    def _sort_by_qvalue(header: bytes) -> typing.List[bytes]:
+    def _sort_by_qvalue(header: str) -> typing.List[str]:
         """
         Pulls apart a header value if it's a list and
         sort the values in the list by their qvalue.
@@ -135,6 +138,6 @@ class Router:
         :param header: Header value to parse.
         :return: List of options sorted by their qvalue.
         """
-        qvalues = [_QVALUE_REGEX.match(val).groups() for val in header.split(b',')]
+        qvalues = [_QVALUE_REGEX.match(val).groups() for val in header.split(',')]
         values = [(float(qval if qval is not None else 1.0), value) for value, qval in qvalues]
         return [value for _, value in sorted(values, reverse=True)]

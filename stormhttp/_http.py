@@ -14,7 +14,7 @@ __all__ = [
 
 
 class HTTPHeaders(collections.MutableMapping):
-    def __init__(self, headers: typing.Mapping[bytes, bytes]):
+    def __init__(self, headers: typing.Mapping[str, str]):
         self._headers = dict()
         for name, value in headers.items():
             self._headers[name] = value
@@ -24,16 +24,17 @@ class HTTPHeaders(collections.MutableMapping):
             ["{}: {}".format(name, value) for name, value in self._headers.items()]
         ))
 
-    def __setitem__(self, key: bytes, value: bytes) -> None:
+    def __setitem__(self, key: str, value: str) -> None:
         self._headers[key] = value
 
-    def __getitem__(self, item: bytes) -> bytes:
-        for key in self._headers:
-            if key.lower() == item.lower():
-                return self._headers[key]
-        raise KeyError("{}".format(item))
+    def __getitem__(self, key: str) -> str:
+        _key = key.lower()
+        for header_key in self._headers:
+            if _key == header_key.lower():
+                return self._headers[header_key]
+        raise KeyError("{}".format(key))
 
-    def __delitem__(self, key: bytes) -> None:
+    def __delitem__(self, key: str) -> None:
         for k in self._headers.keys():
             if k.lower() == key.lower():
                 del self._headers[k]
@@ -54,12 +55,12 @@ class HTTPHeaders(collections.MutableMapping):
         except KeyError:
             return False
 
-    def to_bytes(self) -> bytes:
+    def to_header(self) -> str:
         """
-        Converts the headers to bytes to be sent.
-        :return: The headers as bytes.
+        Converts the headers to a string to be sent.
+        :return: The headers as a string.
         """
-        return b'\r\n'.join([b'%b: %b' % (name, value) for name, value in self._headers.items()])
+        return "\r\n".join(["%s: %s" % (name, value) for name, value in self._headers.items()])
 
 
 class HTTPMessage:
@@ -68,9 +69,9 @@ class HTTPMessage:
         self.cookies = HTTPCookies(b'')
         self.url = None
         self.method = None
-        self.body = b''
-        self.version = b''
-        self.url_bytes = b''
+        self.body = b""
+        self.version = b""
+        self.url_bytes = ""
 
         self._header_buffer = []
         self._is_complete = False
@@ -85,7 +86,7 @@ class HTTPMessage:
         :return: None
         """
         if url != b'':
-            self.url_bytes = url
+            self.url_bytes = url.decode("utf-8")
             self.url = httptools.parse_url(url)
 
     def on_header(self, name: typing.Union[bytes, None], value: typing.Union[bytes, None]) -> None:
@@ -128,7 +129,7 @@ class HTTPMessage:
             _cookies = _headers[b'Cookie']
             del _headers[b'Cookie']
 
-        self.headers = HTTPHeaders(_headers)
+        self.headers = HTTPHeaders({key.decode("utf-8"): value.decode("utf-8") for key, value in _headers.items()})
         self.cookies = HTTPCookies(_cookies)
 
     def on_body(self, body: bytes) -> None:
@@ -145,6 +146,7 @@ class HTTPMessage:
         :return: None
         """
         self._is_complete = True
+        self.body = self.body.decode("utf-8")
 
     def is_complete(self) -> bool:
         """
@@ -178,35 +180,39 @@ class HTTPResponse(HTTPMessage):
         Converts the HTTPResponse to bytes.
         :return: Bytes to send.
         """
-        response_parts = [b'HTTP/%b %d %b' % (self.version, self.status_code, STATUS_CODES[self.status_code])]
-        header_bytes = self.headers.to_bytes()
+        response_parts = ["HTTP/%s %d %s" % (self.version, self.status_code, STATUS_CODES[self.status_code])]
+        header_bytes = self.headers.to_header()
         if len(header_bytes) > 0:
             response_parts.append(header_bytes)
-        cookie_bytes = self.cookies.to_bytes(set_cookie=True)
+        cookie_bytes = self.cookies.to_header(set_cookie=True)
         if len(cookie_bytes) > 0:
             response_parts.append(cookie_bytes)
-        response_parts.extend([b'', self.body])
-        return b'\r\n'.join(response_parts)
+        if isinstance(self.body, str):
+            response_parts.extend(["", self.body])
+            return "\r\n".join(response_parts).encode("utf-8")
+        else:
+            return "\r\n".join(response_parts).encode("utf-8") + b'\r\n\r\n' + self.body
 
 
 class HTTPRequest(HTTPMessage):
     def __init__(self):
         HTTPMessage.__init__(self)
         self.match_info = {}
+        self.app = None
 
     def to_bytes(self) -> bytes:
         """
         Converts the HTTPRequest to bytes.
         :return: Bytes received.
         """
-        request_parts = [b'%b %b HTTP/%b' % (self.method, self.url_bytes, self.version)]
-        header_bytes = self.headers.to_bytes()
+        request_parts = ['%s %s HTTP/%s' % (self.method, self.url_bytes, self.version)]
+        header_bytes = self.headers.to_header()
         if len(header_bytes) > 0:
             request_parts.append(header_bytes)
         if len(self.cookies) > 0:
-            request_parts.append(self.cookies.to_bytes())
-        request_parts.extend([b'', self.body])
-        return b'\r\n'.join(request_parts)
+            request_parts.append(self.cookies.to_header())
+        request_parts.extend(['', self.body])
+        return '\r\n'.join(request_parts).encode("utf-8")
 
     def decorate_response(self, response: HTTPResponse) -> HTTPResponse:
         """
@@ -224,4 +230,5 @@ class HTTPErrorResponse(HTTPResponse):
     def __init__(self, error: int):
         HTTPResponse.__init__(self)
         self.status_code = error
+        self.body = ""
 

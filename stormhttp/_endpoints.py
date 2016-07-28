@@ -1,8 +1,10 @@
 import asyncio
 import datetime
 import hashlib
+import ultrajson as json
 import os
 import typing
+import types
 from ._constants import HTTP_DATETIME_FORMAT
 from ._http import *
 from ._mimetype import EXTENSION_TO_MIMETYPE
@@ -10,7 +12,10 @@ from ._mimetype import EXTENSION_TO_MIMETYPE
 # Global Variables
 __all__ = [
     "AbstractEndPoint",
-    "FileEndPoint"
+    "FileEndPoint",
+    "JSONEndPoint",
+    "ConstantEndPoint",
+    "EndPoint"
 ]
 
 
@@ -19,17 +24,58 @@ class AbstractEndPoint:
         raise NotImplementedError("AbstractEndPoint.on_request is not implemented.")
 
 
-class SimpleEndPoint(AbstractEndPoint):
-    def __init__(self, payload: bytes):
+class ConstantEndPoint(AbstractEndPoint):
+    def __init__(self, payload: str, content_type: str='text/html', content_charset: str='utf-8'):
         AbstractEndPoint.__init__(self)
         self._payload = payload
+        self._content_type = '%s; charset=%s' % (content_type, content_charset)
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        response = HTTPResponse()
-        response.cookies = request.cookies
+        response = request.decorate_response(HTTPResponse())
         response.body = self._payload
-        response.headers[b'Content-Type'] = b'text/plain; charset=utf-8'
+        response.headers['Content-Type'] = self._content_type
         return response
+
+
+class EndPoint(AbstractEndPoint):
+    def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, HTTPResponse]],
+                 content_type: bytes='text/html', content_charset: bytes='utf-8'):
+        AbstractEndPoint.__init__(self)
+        self._handler = handler
+        self._content_type = '%s; charset=%s' % (content_type, content_charset)
+
+    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
+        if asyncio.iscoroutinefunction(self._handler):
+            response = await self._handler(request)
+        else:
+            response = self._handler(request)
+
+        response.headers['Content-Type'] = self._content_type
+        return response
+
+
+class JSONEndPoint(AbstractEndPoint):
+    def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, typing.Mapping, typing.List]]):
+        AbstractEndPoint.__init__(self)
+        self._handler = handler
+
+    async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
+        response = request.decorate_response(HTTPResponse())
+        if asyncio.iscoroutinefunction(self._handler):
+            response_json = await self._handler(request)
+        else:
+            response_json = self._handler(request)
+        if not isinstance(response_json, list) and not isinstance(response_json, dict):
+            response.status_code = 500
+            return response
+        try:
+            response.body = json.dumps(response_json)
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            response.status_code = 200
+            return response
+        except TypeError:
+            response.status_code = 500
+            return response
 
 
 class FileEndPoint(AbstractEndPoint):

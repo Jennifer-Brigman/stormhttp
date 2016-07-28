@@ -1,27 +1,27 @@
 branches:
   only:
-    - master
-    - develop
+  - master
+  - develop
 
 language:
-  - python
+- python
 
 python:
-  - "3.5"
-  - "3.5-dev"
-  - "nightly"
+- '3.5'
+- 3.5-dev
+- nightly
 
 env:
-  - USE_UVLOOP=0
-  - USE_UVLOOP=1
+- USE_UVLOOP=0
+- USE_UVLOOP=1
 
 install:
-  - "pip install -r requirements.txt"
-  - "pip install coverage coveralls pytest"
-  - "if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop; fi"
+- pip install -r requirements.txt
+- pip install coverage coveralls pytest
+- if [[ $USE_UVLOOP == 1 ]]; then pip install uvloop; fi
 
 script:
-  - "coverage run --source=stormhttp setup.py test"
+- coverage run --source=stormhttp setup.py test
 
 after_success:
-  - "coveralls"
+- coveralls

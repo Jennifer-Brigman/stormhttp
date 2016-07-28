@@ -1,12 +1,11 @@
 import collections
 import datetime
 import re
-import sys
 import typing
 from ._constants import HTTP_DATETIME_FORMAT
 
 # Global Variables
-_COOKIE_REGEX = re.compile(b'([^\s=;]+)(?:=([^=;]+))?(?:;|$)')
+_COOKIE_REGEX = re.compile(r'([^\s=;]+)(?:=([^=;]+))?(?:;|$)')
 _COOKIE_EXPIRE_TIME = datetime.datetime.utcfromtimestamp(0)
 
 
@@ -15,31 +14,31 @@ class HTTPCookies(collections.MutableMapping):
         self._cookies = {}
         self._changed = set()
         self._meta = {}
-        for key, value in _COOKIE_REGEX.findall(raw_cookies):
+        for key, value in _COOKIE_REGEX.findall(raw_cookies.decode("utf-8")):
             self._cookies[key] = value
 
-    def __getitem__(self, item: bytes) -> bytes:
+    def __getitem__(self, item: str) -> str:
         return self._cookies[item]
 
-    def __setitem__(self, key: bytes, value: bytes) -> None:
+    def __setitem__(self, key: str, value: str) -> None:
         self._cookies[key] = value
         self._changed.add(key)
 
-    def __contains__(self, item: bytes) -> bool:
+    def __contains__(self, item: str) -> bool:
         return item in self._cookies
 
     def __len__(self) -> int:
         return len(self._cookies)
 
-    def __delitem__(self, item: bytes):
-        self[item] = b''
+    def __delitem__(self, item: str):
+        self[item] = ""
 
     def __iter__(self):
         return iter(self._cookies)
 
-    def set_meta(self, cookie: bytes,
-                 domain: typing.Optional[bytes]=None,
-                 path: typing.Optional[bytes]=None,
+    def set_meta(self, cookie: str,
+                 domain: typing.Optional[str]=None,
+                 path: typing.Optional[str]=None,
                  expires: typing.Optional[datetime.datetime]=None,
                  max_age: typing.Optional[int]=None, http_only: bool=False,
                  secure: bool=False) -> None:
@@ -68,7 +67,7 @@ class HTTPCookies(collections.MutableMapping):
         self._changed.add(cookie)
         self._meta[cookie] = (domain, path, expires, http_only, secure)
 
-    def expire_cookie(self, cookie: bytes) -> None:
+    def expire_cookie(self, cookie: str) -> None:
         """
         Forces a cookie to expire by setting all it's values to empty
         strings and applies an expired timestamp to it.
@@ -77,10 +76,10 @@ class HTTPCookies(collections.MutableMapping):
         """
         if cookie not in self._cookies:
             raise KeyError(str(cookie))
-        self._cookies[cookie] = b''
+        self._cookies[cookie] = ""
         self.set_meta(cookie, expires=_COOKIE_EXPIRE_TIME)
 
-    def to_bytes(self, set_cookie: bool=False) -> bytes:
+    def to_header(self, set_cookie: bool=False) -> bytes:
         """
         Converts the cookies to bytes to be sent.
         :param set_cookie: If True, will only convert changed
@@ -94,15 +93,15 @@ class HTTPCookies(collections.MutableMapping):
                 if cookie in self._changed:
                     domain, path, expires, http_only, secure = self._meta.get(cookie, _no_meta)
                     if expires is not None:
-                        expires = expires.strftime(HTTP_DATETIME_FORMAT).encode("utf-8")
-                    cookie_headers.append(b'Set-Cookie: %b=%b;%b%b%b%b%b' % (
+                        expires = expires.strftime(HTTP_DATETIME_FORMAT)
+                    cookie_headers.append("Set-Cookie: %s=%s;%s%s%s%s%s" % (
                         cookie, self._cookies[cookie],
-                        b' Domain=%b;' % domain if domain is not None else b'',
-                        b' Path=%b;' % path if path is not None else b'',
-                        b' Expires=%b;' % expires if expires is not None else b'',
-                        b' HttpOnly;' if http_only else b'',
-                        b' Secure;' if secure else b''
+                        " Domain=%s;" % domain if domain is not None else "",
+                        " Path=%s;" % path if path is not None else "",
+                        " Expires=%s;" % expires if expires is not None else "",
+                        " HttpOnly;" if http_only else "",
+                        " Secure;" if secure else ""
                     ))
-            return b'\r\n'.join(cookie_headers)
+            return "\r\n".join(cookie_headers)
         else:
-            return b'Cookie: %b' % (b' '.join(b'%b=%b;' % (key, value) for key, value in self._cookies.items()))
+            return "Cookie: %s" % (" ".join("%s=%s;" % (key, value) for key, value in self._cookies.items()))

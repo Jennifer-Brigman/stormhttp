@@ -23,8 +23,8 @@ setup(
     license="Apache 2",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
-    url="https://github.com/SethMichaelLarson/Stormsurge",
-    download_url="https://github.com/SethMichaelLarson/Stormsurge/tarball/" + __version__,
+    url="https://github.com/SethMichaelLarson/stormhttp",
+    download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + __version__,
     keywords=["web", "framework", "async"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
@@ -37,9 +37,13 @@ setup(
     ],
     install_requires=[
         "brotlipy==0.3.0",
+        "cchardet==1.0.0",
         "cffi==1.7.0",
+        "cryptography==1.4",
         "httptools==0.0.9",
-        "pycparser==2.14"
+        "pycparser==2.14",
+        "ultrajson==1.35",
+        "Jinja2==2.8"
     ],
     tests_require=[
         "pytest",

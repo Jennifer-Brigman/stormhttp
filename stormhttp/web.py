@@ -3,8 +3,11 @@ import httptools
 import socket
 import ssl
 import typing
-from .router import *
+from ._router import *
 from ._http import *
+from ._endpoints import *
+from ._middleware import *
+
 
 # Global Variables
 __all__ = [
@@ -12,10 +15,12 @@ __all__ = [
 ]
 
 
-class Application:
+class Application(dict):
     def __init__(self, loop: asyncio.AbstractEventLoop):
-        self._loop = loop
-        self.router = Router(self._loop)
+        dict.__init__({})
+        self.loop = loop
+        self.router = Router(self.loop)
+        self.middlewares = []
 
     async def listen_to_client(self, client: socket.socket) -> None:
         """
@@ -32,11 +37,12 @@ class Application:
         try:
             while True:
                 request = HTTPRequest()
+                request.app = self
                 try:
                     request_parser = httptools.HttpRequestParser(request)
                     while not request.is_complete():
                         try:
-                            data = await self._loop.sock_recv(client, 102400)
+                            data = await self.loop.sock_recv(client, 102400)
                         except OSError:
                             client.close()
                             return
@@ -45,8 +51,8 @@ class Application:
                         else:
                             client.close()
                             return
-                    request.method = request_parser.get_method()
-                    request.version = request_parser.get_http_version().encode("latin-1")
+                    request.method = request_parser.get_method().decode("utf-8")
+                    request.version = request_parser.get_http_version()
                     if request.url is None:
                         client.close()
                         return
@@ -57,8 +63,21 @@ class Application:
         except OSError:
             return
 
+    def add_middleware(self, middleware: AbstractMiddleware) -> None:
+        """
+        Adds a single middleware to the request/response pipeline.
+        :param middleware: Middleware to add.
+        :return: None
+        """
+        if middleware not in self.middlewares:
+            self.middlewares.append(middleware)
 
+
+<<<<<<< HEAD
 def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None) -> None:
+=======
+def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None, **kwargs) -> None:
+>>>>>>> 630d57e6030002e61183ae2ad33975a13e4d97d0
     """
     Runs an Application object as an asyncio server.
     :param app: Application to run.
@@ -79,9 +98,10 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: 
             pass
 
         server.bind((host, port))
-        server.listen(512)
+        server.listen(kwargs.get("backlog", 512))
         while True:
             client, _ = await _loop.sock_accept(server)
+            print("!")
             _loop.create_task(app.listen_to_client(client))
 
     scheme = "http"
@@ -90,6 +110,6 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: 
     print("======== Running on {}://{}:{}/ ========".format(scheme, host, port))
     print("(Press CTRL+C to quit)")
 
-    loop = app._loop
+    loop = app.loop
     loop.run_until_complete(_connect_loop(loop))
     loop.run_forever()
