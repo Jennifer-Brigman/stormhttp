@@ -25,25 +25,24 @@ class AbstractEndPoint:
 
 
 class ConstantEndPoint(AbstractEndPoint):
-    def __init__(self, payload: bytes, content_type: bytes=b'text/html', content_charset: bytes=b'utf-8'):
+    def __init__(self, payload: str, content_type: str='text/html', content_charset: str='utf-8'):
         AbstractEndPoint.__init__(self)
         self._payload = payload
-        self._content_type = b'%b; charset=%b' % (content_type, content_charset)
+        self._content_type = '%s; charset=%s' % (content_type, content_charset)
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        response = HTTPResponse()
-        response.cookies = request.cookies
+        response = request.decorate_response(HTTPResponse())
         response.body = self._payload
-        response.headers[b'Content-Type'] = self._content_type
+        response.headers['Content-Type'] = self._content_type
         return response
 
 
 class EndPoint(AbstractEndPoint):
     def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, HTTPResponse]],
-                 content_type: bytes=b'text/html', content_charset: bytes=b'utf-8'):
+                 content_type: bytes='text/html', content_charset: bytes='utf-8'):
         AbstractEndPoint.__init__(self)
         self._handler = handler
-        self._content_type = b'%b; charset=%b' % (content_type, content_charset)
+        self._content_type = '%s; charset=%s' % (content_type, content_charset)
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
         if asyncio.iscoroutinefunction(self._handler):
@@ -51,7 +50,7 @@ class EndPoint(AbstractEndPoint):
         else:
             response = self._handler(request)
 
-        response.headers[b'Content-Type'] = self._content_type
+        response.headers['Content-Type'] = self._content_type
         return response
 
 
@@ -67,8 +66,8 @@ class JSONEndPoint(AbstractEndPoint):
         else:
             response_json = self._handler(request)
         try:
-            response.body = json.dumps(response_json).encode("utf-8")
-            response.headers[b'Content-Type'] = b'application/json; charset=utf-8'
+            response.body = json.dumps(response_json)
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
             response.status_code = 200
             return response
         except TypeError:

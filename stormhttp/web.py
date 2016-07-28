@@ -6,6 +6,7 @@ import typing
 from ._router import *
 from ._http import *
 from ._endpoints import *
+from ._middleware import *
 
 
 # Global Variables
@@ -19,6 +20,7 @@ class Application(dict):
         dict.__init__({})
         self.loop = loop
         self.router = Router(self.loop)
+        self.middlewares = []
 
     async def listen_to_client(self, client: socket.socket) -> None:
         """
@@ -49,8 +51,8 @@ class Application(dict):
                         else:
                             client.close()
                             return
-                    request.method = request_parser.get_method()
-                    request.version = request_parser.get_http_version().encode("latin-1")
+                    request.method = request_parser.get_method().decode("utf-8")
+                    request.version = request_parser.get_http_version()
                     if request.url is None:
                         client.close()
                         return
@@ -60,6 +62,15 @@ class Application(dict):
                 await self.router.process_request(client, request)
         except OSError:
             return
+
+    def add_middleware(self, middleware: AbstractMiddleware) -> None:
+        """
+        Adds a single middleware to the request/response pipeline.
+        :param middleware: Middleware to add.
+        :return: None
+        """
+        if middleware not in self.middlewares:
+            self.middlewares.append(middleware)
 
 
 def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None, **kwargs) -> None:
