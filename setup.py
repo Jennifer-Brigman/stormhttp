@@ -17,7 +17,10 @@ class PyTest(test):
 
 setup(
     name="stormhttp",
-    packages=["stormhttp"],
+    packages=[
+        "stormhttp",
+        "stormhttp.ext"
+    ],
     version=__version__,
     description="Performant asynchronous web application framework.",
     license="Apache 2",
