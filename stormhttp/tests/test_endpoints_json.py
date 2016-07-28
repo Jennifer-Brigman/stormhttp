@@ -36,7 +36,7 @@ class TestJSONEndpoint(unittest.TestCase):
             app = Application(loop)
             app.router.add_endpoint('/', ['GET'], JSONEndPoint(handler))
             response = await app.router.route_request(create_http_request(app))
-            self.assertEqual(response.body, '{"a": 0}')
+            self.assertEqual(response.body, '{"a":0}')
             self.assertEqual(response.status_code, 200)
 
         asyncio.get_event_loop().run_until_complete(main())
@@ -50,7 +50,7 @@ class TestJSONEndpoint(unittest.TestCase):
             app = Application(loop)
             app.router.add_endpoint('/', ['GET'], JSONEndPoint(handler))
             response = await app.router.route_request(create_http_request(app))
-            self.assertEqual(response.body, '{"a": 0}')
+            self.assertEqual(response.body, '{"a":0}')
             self.assertEqual(response.status_code, 200)
 
         asyncio.get_event_loop().run_until_complete(main())
@@ -58,7 +58,7 @@ class TestJSONEndpoint(unittest.TestCase):
     def test_invalid_json_endpoint(self):
         async def main():
             async def handler(request: HTTPRequest):
-                return {'a'}
+                return False
 
             loop = asyncio.get_event_loop()
             app = Application(loop)
