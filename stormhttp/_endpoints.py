@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 import hashlib
-import json
+import ultrajson as json
 import os
 import typing
 import types
@@ -65,6 +65,9 @@ class JSONEndPoint(AbstractEndPoint):
             response_json = await self._handler(request)
         else:
             response_json = self._handler(request)
+        if not isinstance(response_json, list) and not isinstance(response_json, dict):
+            response.status_code = 500
+            return response
         try:
             response.body = json.dumps(response_json)
             response.headers['Content-Type'] = 'application/json; charset=utf-8'

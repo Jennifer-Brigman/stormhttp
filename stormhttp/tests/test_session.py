@@ -55,7 +55,7 @@ class TestSession(unittest.TestCase):
             stormhttp.ext.session.setup(app, stormhttp.ext.session.SimpleStorage())
             app.router.add_endpoint('/', ['GET'], EndPoint(handler))
             request = create_http_request(app)
-            request.cookies['_stormhttp_session'] = '{"a": 1}'
+            request.cookies['_stormhttp_session'] = '{"a":1}'
             await app.router.route_request(request)
 
         asyncio.get_event_loop().run_until_complete(main())
