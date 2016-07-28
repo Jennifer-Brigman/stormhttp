@@ -1,4 +1,5 @@
 import asyncio
+import cchardet
 import datetime
 import hashlib
 import ultrajson as json
@@ -94,8 +95,8 @@ class FileEndPoint(AbstractEndPoint):
             if ext in EXTENSION_TO_MIMETYPE:
                 self._content_type = EXTENSION_TO_MIMETYPE[ext][0]
         if self._content_type is None:
-            self._content_type = b'text/plain'
-        self._content_type += b'; charset=%b' % (self._encoding.encode("latin-1"),)
+            self._content_type = 'text/plain'
+        self._content_type += '; charset=%s' % (self._encoding,)
 
     def _file_modified(self) -> bool:
         """
@@ -111,19 +112,17 @@ class FileEndPoint(AbstractEndPoint):
         self._last_mod = self._last_mod_dt.strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
         with open(self._path, "rb") as f:
             payload = f.read()
-            self._cache = payload
-            self._etag = hashlib.sha1(payload).hexdigest().encode("latin-1")
+            payload_enc = cchardet.detect(payload)["encoding"]
+            self._cache = payload.decode(payload_enc)
+            self._etag = hashlib.sha1(payload).hexdigest().encode("ascii")
             return payload
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        response = HTTPResponse()
-        response.version = request.version
-
         resend_data = True
-        if b'If-Modified-Since' in request.headers and self._last_mod_dt is not None:
+        if 'If-Modified-Since' in request.headers and self._last_mod_dt is not None:
             try:
                 modified_since = datetime.datetime.strptime(
-                    request.headers[b'If-Modified-Since'].decode("latin-1"),
+                    request.headers['If-Modified-Since'].decode("latin-1"),
                     HTTP_DATETIME_FORMAT
                 )
                 if modified_since >= self._last_mod_dt:
@@ -134,18 +133,16 @@ class FileEndPoint(AbstractEndPoint):
         if resend_data:
             try:
                 modified = await loop.run_in_executor(None, self._file_modified)
-                if b'If-None-Match' in request.headers and self._etag == request.headers[b'If-None-Match']:
-                    response.status_code = 304
-                    return response
+                if 'If-None-Match' in request.headers and self._etag == request.headers['If-None-Match']:
+                    return HTTPErrorResponse(304)
+                response = request.decorate_response(HTTPResponse())
                 response.body = modified
-                response.headers[b'Content-Length'] = b'%d' % (len(modified),)
-                response.headers[b'Content-Type'] = self._content_type
-                response.headers[b'ETag'] = self._etag
-                response.headers[b'Last-Modified'] = self._last_mod
+                response.headers['Content-Length'] = str(len(modified))
+                response.headers['Content-Type'] = self._content_type
+                response.headers['ETag'] = self._etag
+                response.headers['Last-Modified'] = self._last_mod
                 return response
             except OSError:
-                response.status_code = 404
-                return response
+                return HTTPErrorResponse(404)
         else:
-            response.status_code = 304
-            return response
+            return HTTPErrorResponse(304)

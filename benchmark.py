@@ -30,14 +30,5 @@ if __name__ == "__main__":
 
     loop.set_default_executor(concurrent.futures.ThreadPoolExecutor())
     app = stormhttp.web.Application(loop)
-<<<<<<< HEAD
-    app.router.add_endpoint(b'/', {b'GET'}, BenchmarkEndPoint(b'a' * (1024 * 100)))
-
-    ssl_context = None
-    if "--ssl" in sys.argv:
-        ssl_context = ssl.create_default_context(cafile="server.crt")
-    stormhttp.web.run_app(app, ssl_context=ssl_context)
-=======
     app.router.add_endpoint('/', ['GET'], BenchmarkEndPoint('a' * (1024 * 100)))
     stormhttp.web.run_app(app)
->>>>>>> 630d57e6030002e61183ae2ad33975a13e4d97d0
