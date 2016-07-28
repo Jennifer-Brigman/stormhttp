@@ -187,8 +187,11 @@ class HTTPResponse(HTTPMessage):
         cookie_bytes = self.cookies.to_header(set_cookie=True)
         if len(cookie_bytes) > 0:
             response_parts.append(cookie_bytes)
-        response_parts.extend(["", self.body])
-        return "\r\n".join(response_parts).encode("utf-8")
+        if isinstance(self.body, str):
+            response_parts.extend(["", self.body])
+            return "\r\n".join(response_parts).encode("utf-8")
+        else:
+            return "\r\n".join(response_parts).encode("utf-8") + b'\r\n\r\n' + self.body
 
 
 class HTTPRequest(HTTPMessage):
@@ -227,4 +230,5 @@ class HTTPErrorResponse(HTTPResponse):
     def __init__(self, error: int):
         HTTPResponse.__init__(self)
         self.status_code = error
+        self.body = ""
 

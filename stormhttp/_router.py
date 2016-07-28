@@ -117,7 +117,7 @@ class Router:
             encodings = self._sort_by_qvalue(request.headers['Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
-                    response.body = (await self._loop.run_in_executor(None, encode_bytes, enc, response.body.encode("utf-8"))).decode("utf-8")
+                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body.encode("utf-8"))
                     response.headers['Content-Encoding'] = enc
                     response.headers['Content-Length'] = str(len(response.body),)
                     break
@@ -129,7 +129,7 @@ class Router:
             pass
 
     @staticmethod
-    def _sort_by_qvalue(header: bytes) -> typing.List[bytes]:
+    def _sort_by_qvalue(header: str) -> typing.List[str]:
         """
         Pulls apart a header value if it's a list and
         sort the values in the list by their qvalue.
@@ -138,6 +138,6 @@ class Router:
         :param header: Header value to parse.
         :return: List of options sorted by their qvalue.
         """
-        qvalues = [_QVALUE_REGEX.match(val).groups() for val in header.split(b',')]
+        qvalues = [_QVALUE_REGEX.match(val).groups() for val in header.split(',')]
         values = [(float(qval if qval is not None else 1.0), value) for value, qval in qvalues]
         return [value for _, value in sorted(values, reverse=True)]
