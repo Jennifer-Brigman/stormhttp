@@ -37,9 +37,13 @@ setup(
     ],
     install_requires=[
         "brotlipy==0.3.0",
+        "cchardet==1.0.0",
         "cffi==1.7.0",
+        "cryptography==1.4",
         "httptools==0.0.9",
-        "pycparser==2.14"
+        "pycparser==2.14",
+        "ultrajson==1.35",
+        "Jinja2==2.8"
     ],
     tests_require=[
         "pytest",
