@@ -73,11 +73,7 @@ class Application(dict):
             self.middlewares.append(middleware)
 
 
-<<<<<<< HEAD
-def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None) -> None:
-=======
 def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: typing.Optional[ssl.SSLContext]=None, **kwargs) -> None:
->>>>>>> 630d57e6030002e61183ae2ad33975a13e4d97d0
     """
     Runs an Application object as an asyncio server.
     :param app: Application to run.
