@@ -1,5 +1,6 @@
 # stormhttp
 Performant asynchronous web application framework built on [httptools](https://github.com/MagicStack/httptools) for Python 3.5+
+This library is still in alpha and should not be used in a production setting!
 
 [![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
 [![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp)
@@ -20,7 +21,7 @@ Running 30s test @ http://127.0.0.1:8080
   115776 requests in 30.10s, 11.05GB read
   Socket errors: connect 0, read 0, write 0, timeout 40
 Requests/sec:   3846.43
-Transfer/sec:    375.86MB
+Transfer/sec:    370.64MB
 ```
 
 #### aiohttp
