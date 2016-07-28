@@ -41,19 +41,19 @@ class Jinja2EndPoint(stormhttp.web.AbstractEndPoint):
         env = request.app.get(_APP_KEY, None)
         if env is None:
             response = stormhttp.web.HTTPErrorResponse(500)
-            response.body = b'Template engine is not initialized. Call stormhttp_jinja2.setup(...) first.'
+            response.body = 'Template engine is not initialized. Call stormhttp_jinja2.setup(...) first.'
             return response
         try:
             template = env.get_template(self._template_name)
         except jinja2.TemplateNotFound:
             response = stormhttp.web.HTTPErrorResponse(500)
-            response.body = b'Template \'%b\' not found.' % (self._template_name.encode("utf-8"),)
+            response.body = 'Template \'%s\' not found.' % (self._template_name.encode("utf-8"),)
             return response
         if not isinstance(context, typing.Mapping):
             response = stormhttp.web.HTTPErrorResponse(500)
-            response.body = b'Context should be of type mapping, not \'%b\'.' % (str(type(context)).encode("utf-8"),)
+            response.body = 'Context should be of type mapping, not \'%s\'.' % (str(type(context)),)
             return response
         response = stormhttp.web.HTTPResponse()
-        response.body = template.render(context).encode(self._encoding)
-        response.headers[b'Content-Type'] = b'text/html; charset=%b' % (self._encoding.encode("utf-8"))
+        response.body = template.render(context)
+        response.headers['Content-Type'] = 'text/html; charset=%s' % (self._encoding,)
         return response

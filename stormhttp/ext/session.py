@@ -14,7 +14,7 @@ __all__ = [
     "SimpleStorage",
     "EncryptedFernetStorage"
 ]
-_COOKIE_NAME = b'_stormhttp_session'
+_COOKIE_NAME = '_stormhttp_session'
 
 
 class Session(dict):
@@ -50,8 +50,8 @@ class Session(dict):
 
 
 class AbstractStorage:
-    def __init__(self, cookie_name: bytes=_COOKIE_NAME, domain: typing.Optional[bytes]=None,
-                 max_age: typing.Optional[int]=None, path: typing.Optional[bytes]=b'/',
+    def __init__(self, cookie_name: str=_COOKIE_NAME, domain: typing.Optional[str]=None,
+                 max_age: typing.Optional[str]=None, path: typing.Optional[str]='/',
                  secure: bool=True, http_only: bool=True):
         self._cookie_name = cookie_name
         self._domain = domain
@@ -70,7 +70,7 @@ class AbstractStorage:
         cookie = request.cookies.get(self._cookie_name, None)
         return cookie
 
-    def save_cookie(self, response: stormhttp.web.HTTPResponse, cookie: typing.Optional[bytes]) -> None:
+    def save_cookie(self, response: stormhttp.web.HTTPResponse, cookie: typing.Optional[str]) -> None:
         if cookie is None:
             response.cookies.expire_cookie(self._cookie_name)
         else:
@@ -82,9 +82,9 @@ class AbstractStorage:
 
 
 class SimpleStorage(AbstractStorage):
-    def __init__(self, cookie_name: bytes=_COOKIE_NAME,
-                 domain: typing.Optional[bytes]=None, max_age: typing.Optional[int]=None,
-                 path: typing.Optional[bytes]=b'/', secure: bool=True, http_only: bool=True):
+    def __init__(self, cookie_name: str=_COOKIE_NAME,
+                 domain: typing.Optional[str]=None, max_age: typing.Optional[int]=None,
+                 path: typing.Optional[str]='/', secure: bool=True, http_only: bool=True):
         AbstractStorage.__init__(self, cookie_name, domain, max_age, path, secure, http_only)
 
     async def load_session(self, request: stormhttp.web.HTTPRequest) -> Session:
@@ -98,13 +98,13 @@ class SimpleStorage(AbstractStorage):
                 return Session(None, data={})
 
     async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
-        self.save_cookie(response, json.dumps(session).encode("utf-8"))
+        self.save_cookie(response, json.dumps(session))
 
 
 class EncryptedFernetStorage(AbstractStorage):
-    def __init__(self, secret_key: typing.Union[str, bytes], cookie_name: bytes=_COOKIE_NAME,
-                 domain: typing.Optional[bytes]=None, max_age: typing.Optional[int]=None,
-                 path: typing.Optional[bytes]=b'/', secure: bool=True, http_only: bool=True):
+    def __init__(self, secret_key: typing.Union[str, bytes], cookie_name: str=_COOKIE_NAME,
+                 domain: typing.Optional[str]=None, max_age: typing.Optional[int]=None,
+                 path: typing.Optional[str]='/', secure: bool=True, http_only: bool=True):
         AbstractStorage.__init__(self, cookie_name, domain, max_age, path, secure, http_only)
         if isinstance(secret_key, bytes):
             secret_key = base64.urlsafe_b64encode(secret_key)
@@ -123,9 +123,9 @@ class EncryptedFernetStorage(AbstractStorage):
 
     async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
         if len(session) == 0:
-            self.save_cookie(response, b'')
+            self.save_cookie(response, '')
         else:
-            self.save_cookie(response, self._fernet.encrypt(json.dumps(session).decode("utf-8")))
+            self.save_cookie(response, self._fernet.encrypt(json.dumps(session).decode("utf-8")).encode("utf-8"))
 
 
 def setup(app: stormhttp.web.Application, storage: AbstractStorage) -> None:

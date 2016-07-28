@@ -6,16 +6,16 @@ class TestHTTPRequest(unittest.TestCase):
         from stormhttp._http import HTTPRequest
         request = HTTPRequest()
 
-        request.version = b'1.1'
-        request.method = b'GET'
-        request.url_bytes = b'/'
-        request.body = b'test'
+        request.version = '1.1'
+        request.method = 'GET'
+        request.url_bytes = '/'
+        request.body = 'test'
         self.assertEqual(request.to_bytes(), b'GET / HTTP/1.1\r\n\r\ntest')
 
-        request.headers[b'Accept'] = b'text/html'
+        request.headers['Accept'] = 'text/html'
         self.assertEqual(request.to_bytes(), b'GET / HTTP/1.1\r\nAccept: text/html\r\n\r\ntest')
 
-        request.headers[b'Accept-Encoding'] = b'utf-8'
+        request.headers['Accept-Encoding'] = 'utf-8'
         self.assertIn(request.to_bytes(), [
             b'GET / HTTP/1.1\r\nAccept: text/html\r\nAccept-Encoding: utf-8\r\n\r\ntest',
             b'GET / HTTP/1.1\r\nAccept-Encoding: utf-8\r\nAccept: text/html\r\n\r\ntest'
@@ -28,10 +28,10 @@ class TestHTTPRequest(unittest.TestCase):
         request = HTTPRequest()
         parser = httptools.HttpRequestParser(request)
         parser.feed_data(data)
-        request.version = parser.get_http_version().encode("latin-1")
-        request.method = parser.get_method()
-        self.assertTrue(b'a' in request.cookies)
-        self.assertEqual(request.cookies.get(b'a', None), b'1')
+        request.version = parser.get_http_version()
+        request.method = parser.get_method().decode("utf-8")
+        self.assertTrue('a' in request.cookies)
+        self.assertEqual(request.cookies.get('a', None), '1')
 
         self.assertIn(request.to_bytes(), [
             b'GET / HTTP/1.1\r\nAccept: text/html\r\nCookie: a=1;\r\n\r\n',
@@ -58,12 +58,12 @@ class TestHTTPRequest(unittest.TestCase):
                 index += len(data_block)
                 parser.feed_data(data_block)
 
-            request.method = parser.get_method()
-            request.version = parser.get_http_version().encode("latin-1")
+            request.method = parser.get_method().decode("utf-8")
+            request.version = parser.get_http_version()
             self.assertTrue(request.is_complete())
-            self.assertEqual(request.method, b'GET')
-            self.assertEqual(request.version, b'1.1')
-            self.assertEqual(request.url_bytes, b'/')
-            self.assertEqual(request.headers.get(b'Accept', None), b'text/html')
-            self.assertEqual(request.headers.get(b'Accept-Encoding', None), b'utf-8')
-            self.assertEqual(request.cookies.get(b'a', None), b'1')
+            self.assertEqual(request.method, 'GET')
+            self.assertEqual(request.version, '1.1')
+            self.assertEqual(request.url_bytes, '/')
+            self.assertEqual(request.headers.get('Accept', None), 'text/html')
+            self.assertEqual(request.headers.get('Accept-Encoding', None), 'utf-8')
+            self.assertEqual(request.cookies.get('a', None), '1')

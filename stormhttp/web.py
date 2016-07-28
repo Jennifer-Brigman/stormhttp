@@ -51,8 +51,8 @@ class Application(dict):
                         else:
                             client.close()
                             return
-                    request.method = request_parser.get_method()
-                    request.version = request_parser.get_http_version().encode("latin-1")
+                    request.method = request_parser.get_method().decode("utf-8")
+                    request.version = request_parser.get_http_version()
                     if request.url is None:
                         client.close()
                         return
