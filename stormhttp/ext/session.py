@@ -1,6 +1,8 @@
+import aioredis
 import base64
 import cryptography.fernet
 import ultrajson as json
+import uuid
 import typing
 import stormhttp
 
@@ -18,7 +20,7 @@ _COOKIE_NAME = '_stormhttp_session'
 class Session(dict):
     def __init__(self, identity, data: dict):
         dict.__init__({})
-        self._identity = identity
+        self.identity = identity
         self._changed = False
         self._mapping = data
 
@@ -124,6 +126,37 @@ class EncryptedCookieStorage(AbstractStorage):
             self.save_cookie(response, '')
         else:
             self.save_cookie(response, self._fernet.encrypt(json.dumps(session).encode("utf-8")).decode("utf-8"))
+
+
+class RedisStorage(AbstractStorage):
+    def __init__(self, redis_pool: aioredis.RedisPool, cookie_name: str=_COOKIE_NAME,
+                 domain: typing.Optional[str]=None, max_age: typing.Optional[int]=None,
+                 path: typing.Optional[str]='/', secure: bool=True, http_only: bool=True):
+        AbstractStorage.__init__(self, cookie_name, domain, max_age, path, secure, http_only)
+        self._redis_pool = redis_pool
+
+    async def load_session(self, request: stormhttp.web.HTTPRequest) -> Session:
+        cookie = self.load_cookie(request)
+        if cookie is None:
+            return Session(None, {})
+        else:
+            async with self._redis_pool as pool:
+                key = cookie
+                data = await pool.get(self._cookie_name + "_" + key)
+                if data is None:
+                    return Session(None, {})
+                data = json.loads(data.decode("utf-8"))
+                return Session(key, data)
+
+    async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
+        key = session.identity
+        if key is None:
+            key = uuid.uuid4().hex
+        self.save_cookie(response, key)
+
+        data = json.dumps(session)
+        async with self._redis_pool as pool:
+            await pool.set(self._cookie_name + "_" + key, data)
 
 
 def setup(app: stormhttp.web.Application, storage: AbstractStorage) -> None:
