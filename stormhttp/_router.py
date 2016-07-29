@@ -91,7 +91,6 @@ class Router:
                         await middleware.on_response(request, response)
                     return response
                 except Exception as err:
-                    print(str(err))
                     return request.decorate_response(HTTPErrorResponse(500))
             else:
                 response = request.decorate_response(HTTPErrorResponse(405))
@@ -113,7 +112,7 @@ class Router:
         if should_close:
             response.headers['Connection'] = 'close'
 
-        if 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers:
+        if 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers and len(response.body) > 32:
             encodings = self._sort_by_qvalue(request.headers['Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
