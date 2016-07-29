@@ -34,6 +34,23 @@ class TestHTTPRouter(unittest.TestCase):
 
         asyncio.get_event_loop().run_until_complete(main())
 
+    def test_head_method_route(self):
+        async def main():
+            from stormhttp._router import Router
+            from stormhttp._endpoints import ConstantEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint("/", ["GET"], ConstantEndPoint('test'))
+            request = create_standard_request()
+            request.method = "HEAD"
+
+            response = await router.route_request(request)
+            self.assertEqual(response.body, '')
+            self.assertEqual(response.status_code, 200)
+
+        asyncio.get_event_loop().run_until_complete(main())
+
     def test_add_multiple_methods(self):
         async def main():
             from stormhttp._router import Router

@@ -81,14 +81,16 @@ class Router:
 
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]
-            if request.method in current_node:
-                endpoint = current_node[request.method]
+            if request.method in current_node or (request.method == "HEAD" and "GET" in current_node):
+                endpoint = current_node[request.method if request.method != "HEAD" else "GET"]
                 try:
                     for middleware in request.app.middlewares if request.app is not None else []:
                         await middleware.on_request(request)
                     response = await endpoint.on_request(self._loop, request)
                     for middleware in request.app.middlewares if request.app is not None else []:
                         await middleware.on_response(request, response)
+                    if request.method == "HEAD":
+                        response.body = ''
                     return response
                 except Exception as err:
                     return request.decorate_response(HTTPErrorResponse(500))
