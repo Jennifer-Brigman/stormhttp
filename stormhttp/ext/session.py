@@ -12,6 +12,7 @@ __all__ = [
     "Session",
     "AbstractStorage",
     "SimpleCookieStorage",
+    "RedisStorage",
     "EncryptedCookieStorage"
 ]
 _COOKIE_NAME = '_stormhttp_session'
