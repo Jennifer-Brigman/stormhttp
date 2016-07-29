@@ -17,7 +17,10 @@ class PyTest(test):
 
 setup(
     name="stormhttp",
-    packages=["stormhttp"],
+    packages=[
+        "stormhttp",
+        "stormhttp.ext"
+    ],
     version=__version__,
     description="Performant asynchronous web application framework.",
     license="Apache 2",
@@ -36,13 +39,16 @@ setup(
         "Topic :: Internet :: WWW/HTTP"
     ],
     install_requires=[
+        "aioredis==0.2.8",
         "brotlipy==0.3.0",
         "cchardet==1.0.0",
         "cffi==1.7.0",
         "cryptography==1.4",
+        "hiredis==0.2.0",
         "httptools==0.0.9",
         "pycparser==2.14",
         "ultrajson==1.35",
+        "uuid==1.30",
         "Jinja2==2.8"
     ],
     tests_require=[

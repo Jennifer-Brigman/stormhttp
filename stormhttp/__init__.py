@@ -18,5 +18,5 @@ __all__ = [
     "ext"
 ]
 
-from . import ext
 from . import web
+from . import ext

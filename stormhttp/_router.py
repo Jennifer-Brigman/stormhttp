@@ -81,18 +81,21 @@ class Router:
 
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]
-            if request.method in current_node:
-                endpoint = current_node[request.method]
+            if request.method in current_node or (request.method == "HEAD" and "GET" in current_node):
+                endpoint = current_node[request.method if request.method != "HEAD" else "GET"]
                 try:
                     for middleware in request.app.middlewares if request.app is not None else []:
                         await middleware.on_request(request)
                     response = await endpoint.on_request(self._loop, request)
                     for middleware in request.app.middlewares if request.app is not None else []:
                         await middleware.on_response(request, response)
+                    if request.method == "HEAD":
+                        response.body = ''
                     return response
                 except Exception as err:
-                    print(str(err))
-                    return request.decorate_response(HTTPErrorResponse(500))
+                    response = request.decorate_response(HTTPErrorResponse(500))
+                    response.body = str(type(err)) + ": " + str(err)
+                    return response
             else:
                 response = request.decorate_response(HTTPErrorResponse(405))
                 response.headers["Allow"] = ",".join(current_node)
@@ -113,7 +116,7 @@ class Router:
         if should_close:
             response.headers['Connection'] = 'close'
 
-        if 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers:
+        if 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers and len(response.body) > 32:
             encodings = self._sort_by_qvalue(request.headers['Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
