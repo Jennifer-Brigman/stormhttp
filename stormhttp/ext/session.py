@@ -21,11 +21,9 @@ class Session(dict):
     def __init__(self, identity, data: dict):
         dict.__init__({})
         self.identity = identity
-        self._changed = False
         self._mapping = data
 
     def expire_session(self):
-        self._changed = True
         self._mapping = {}
 
     def __len__(self):
@@ -42,11 +40,9 @@ class Session(dict):
 
     def __setitem__(self, key, value):
         self._mapping[key] = value
-        self._changed = True
 
     def __delitem__(self, key):
         del self._mapping[key]
-        self._changed = True
 
 
 class AbstractStorage:
@@ -128,7 +124,7 @@ class EncryptedCookieStorage(AbstractStorage):
             self.save_cookie(response, self._fernet.encrypt(json.dumps(session).encode("utf-8")).decode("utf-8"))
 
 
-class RedisStorage(AbstractStorage):
+class RedisCookieStorage(AbstractStorage):
     def __init__(self, redis_pool: aioredis.RedisPool, cookie_name: str=_COOKIE_NAME,
                  domain: typing.Optional[str]=None, max_age: typing.Optional[int]=None,
                  path: typing.Optional[str]='/', secure: bool=True, http_only: bool=True):
