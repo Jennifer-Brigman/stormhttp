@@ -44,7 +44,7 @@ setup(
         "cchardet==1.0.0",
         "cffi==1.7.0",
         "cryptography==1.4",
-        "hiredis==0.0.2",
+        "hiredis==0.2.0",
         "httptools==0.0.9",
         "pycparser==2.14",
         "ultrajson==1.35",
