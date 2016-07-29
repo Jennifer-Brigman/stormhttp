@@ -42,7 +42,7 @@ class Router:
 
             prefix_match = _PREFIX_MATCH_REGEX.match(step)
             if prefix_match is not None:
-                if _PREFIX_TREE_MATCH in current_node:
+                if _PREFIX_TREE_MATCH in current_node and prefix_match.groups()[0] != current_node[_PREFIX_TREE_MATCH]:
                     raise ValueError("Route {} has more than one match point.".format(route))
                 current_node[_PREFIX_TREE_MATCH] = prefix_match.groups()[0]
                 continue

@@ -102,6 +102,19 @@ class TestHTTPRouter(unittest.TestCase):
 
         asyncio.get_event_loop().run_until_complete(main())
 
+    def test_match_info_different_match_key(self):
+        async def main():
+            from stormhttp._router import Router
+            from stormhttp._endpoints import ConstantEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint('/{a}', ["GET"], ConstantEndPoint('test'))
+            with self.assertRaises(ValueError):
+                router.add_endpoint('/{b}', ["GET"], ConstantEndPoint('test'))
+
+        asyncio.get_event_loop().run_until_complete(main())
+
     def test_match_info_duplicate_route(self):
         async def main():
             from stormhttp._router import Router
@@ -112,6 +125,18 @@ class TestHTTPRouter(unittest.TestCase):
             router.add_endpoint('/{a}', ["GET"], ConstantEndPoint('test'))
             with self.assertRaises(ValueError):
                 router.add_endpoint('/{a}', ["GET"], ConstantEndPoint('test'))
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_match_info_valid_duplicate(self):
+        async def main():
+            from stormhttp._router import Router
+            from stormhttp._endpoints import ConstantEndPoint
+
+            loop = asyncio.get_event_loop()
+            router = Router(loop)
+            router.add_endpoint('/{a}', ["GET"], ConstantEndPoint('test'))
+            router.add_endpoint('/{a}/test', ["GET"], ConstantEndPoint('test'))
 
         asyncio.get_event_loop().run_until_complete(main())
 
