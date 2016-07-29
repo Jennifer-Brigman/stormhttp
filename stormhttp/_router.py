@@ -93,7 +93,9 @@ class Router:
                         response.body = ''
                     return response
                 except Exception as err:
-                    return request.decorate_response(HTTPErrorResponse(500))
+                    response = request.decorate_response(HTTPErrorResponse(500))
+                    response.body = str(type(err)) + ": " + str(err)
+                    return response
             else:
                 response = request.decorate_response(HTTPErrorResponse(405))
                 response.headers["Allow"] = ",".join(current_node)
