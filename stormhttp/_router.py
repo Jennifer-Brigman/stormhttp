@@ -68,6 +68,8 @@ class Router:
         """
         route_steps = request.url.path.decode("utf-8").split('/')[1:]
         current_node = self._prefix_tree
+
+        # Route each step, check for matching info if needed.
         for step in route_steps:
             if step == '':
                 continue  # This ensures that trailing / also routes to same place.
@@ -79,18 +81,29 @@ class Router:
                 continue
             return request.decorate_response(HTTPErrorResponse(404))
 
+        # If we find a sentinel that means there's an EndPoint to examine.
         if _PREFIX_TREE_SENTINEL in current_node:
             current_node = current_node[_PREFIX_TREE_SENTINEL]
+
+            # Allow the HEAD method as if it were a GET method.
             if request.method in current_node or (request.method == "HEAD" and "GET" in current_node):
                 endpoint = current_node[request.method if request.method != "HEAD" else "GET"]
                 try:
+                    # Apply middleware pre-processing
                     for middleware in request.app.middlewares if request.app is not None else []:
                         await middleware.on_request(request)
+
+                    # Do the processing from the EndPoint.
                     response = await endpoint.on_request(self._loop, request)
+
+                    # Apply middleware post-processing
                     for middleware in request.app.middlewares if request.app is not None else []:
                         await middleware.on_response(request, response)
+
+                    # Remove the body if this is a HEAD method.
                     if request.method == "HEAD":
                         response.body = ''
+
                     return response
                 except Exception as err:
                     response = request.decorate_response(HTTPErrorResponse(500))
@@ -116,14 +129,18 @@ class Router:
         if should_close:
             response.headers['Connection'] = 'close'
 
-        if 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers and len(response.body) > 32:
+        if len(response.body) > 32 and 'Accept-Encoding' in request.headers and 'Content-Encoding' not in response.headers:
             encodings = self._sort_by_qvalue(request.headers['Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
                     response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body.encode("utf-8"))
                     response.headers['Content-Encoding'] = enc
-                    response.headers['Content-Length'] = str(len(response.body),)
                     break
+
+        if "Content-Encoding" not in response.headers:
+            response.headers["Content-Encoding"] = "identity"
+        response.headers['Content-Length'] = str(len(response.body))
+
         try:
             await self._loop.sock_sendall(client, response.to_bytes())
             if should_close:

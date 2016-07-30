@@ -17,6 +17,9 @@ class HTTPCookies(collections.MutableMapping):
         for key, value in _COOKIE_REGEX.findall(raw_cookies.decode("utf-8")):
             self._cookies[key] = value
 
+    def get(self, key: str, default=None) -> str:
+        return self._cookies.get(key, default)
+
     def __getitem__(self, item: str) -> str:
         return self._cookies[item]
 

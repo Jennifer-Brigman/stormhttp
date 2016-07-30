@@ -126,7 +126,7 @@ class HTTPMessage:
                     _headers[_buf] += value
                 _buf_done = True
         if b'Cookie' in _headers:
-            _cookies = _headers[b'Cookie']
+            _cookies += _headers[b'Cookie']
             del _headers[b'Cookie']
 
         self.headers = HTTPHeaders({key.decode("utf-8"): value.decode("utf-8") for key, value in _headers.items()})

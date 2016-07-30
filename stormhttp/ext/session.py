@@ -18,14 +18,22 @@ __all__ = [
 _COOKIE_NAME = '_stormhttp_session'
 
 
-class Session(dict):
+class Session:
     def __init__(self, identity, data: dict):
-        dict.__init__({})
-        self.identity = identity
         self._mapping = data
+        self.identity = identity
 
     def expire_session(self):
         self._mapping = {}
+
+    def get(self, key, default=None, type=str):
+        try:
+            return type(self.__getitem__(key))
+        except KeyError:
+            return default
+
+    def __str__(self):
+        return json.dumps(self._mapping)
 
     def __len__(self):
         return len(self._mapping)
@@ -74,7 +82,7 @@ class AbstractStorage:
             response.cookies[self._cookie_name] = cookie
             response.cookies.set_meta(
                 self._cookie_name, domain=self._domain, path=self._path,
-                max_age=self._max_age, http_only=self._http_only
+                max_age=self._max_age, http_only=self._http_only, secure=self._secure
             )
 
 
@@ -95,7 +103,7 @@ class SimpleCookieStorage(AbstractStorage):
                 return Session(None, data={})
 
     async def save_session(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse, session: Session):
-        self.save_cookie(response, json.dumps(session))
+        self.save_cookie(response, str(session))
 
 
 class EncryptedCookieStorage(AbstractStorage):
@@ -122,7 +130,7 @@ class EncryptedCookieStorage(AbstractStorage):
         if len(session) == 0:
             self.save_cookie(response, '')
         else:
-            self.save_cookie(response, self._fernet.encrypt(json.dumps(session).encode("utf-8")).decode("utf-8"))
+            self.save_cookie(response, self._fernet.encrypt(str(session).encode("utf-8")).decode("utf-8"))
 
 
 class RedisCookieStorage(AbstractStorage):
