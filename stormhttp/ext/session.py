@@ -12,6 +12,7 @@ __all__ = [
     "Session",
     "AbstractStorage",
     "SimpleCookieStorage",
+    "RedisStorage",
     "EncryptedCookieStorage"
 ]
 _COOKIE_NAME = '_stormhttp_session'
@@ -176,4 +177,5 @@ class SessionMiddleware(stormhttp.web.AbstractMiddleware):
         request.session = await self._storage.load_session(request)
 
     async def on_response(self, request: stormhttp.web.HTTPRequest, response: stormhttp.web.HTTPResponse):
-        await self._storage.save_session(request, response, request.session)
+        if hasattr(request, "session"):
+            await self._storage.save_session(request, response, request.session)

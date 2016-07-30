@@ -84,7 +84,6 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: 
     """
     async def _connect_loop(_loop: asyncio.AbstractEventLoop) -> None:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print(ssl_context)
         if ssl_context is not None:
             ssl_context.wrap_socket(server)
         server.setblocking(False)
@@ -97,7 +96,6 @@ def run_app(app: Application, host: str="0.0.0.0", port: int=8080, ssl_context: 
         server.listen(kwargs.get("backlog", 512))
         while True:
             client, _ = await _loop.sock_accept(server)
-            print("!")
             _loop.create_task(app.listen_to_client(client))
 
     scheme = "http"
