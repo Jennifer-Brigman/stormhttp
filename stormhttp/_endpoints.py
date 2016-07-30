@@ -109,7 +109,7 @@ class FileEndPoint(AbstractEndPoint):
             return self._cache
         self._mtime = mtime
         self._last_mod_dt = datetime.datetime.utcfromtimestamp(mtime)
-        self._last_mod = self._last_mod_dt.strftime(HTTP_DATETIME_FORMAT).encode("latin-1")
+        self._last_mod = self._last_mod_dt.strftime(HTTP_DATETIME_FORMAT)
         with open(self._path, "rb") as f:
             payload = f.read()
             payload_enc = cchardet.detect(payload)["encoding"]
@@ -118,31 +118,33 @@ class FileEndPoint(AbstractEndPoint):
             return payload
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
-        resend_data = True
+        resend_data = False
         if 'If-Modified-Since' in request.headers and self._last_mod_dt is not None:
             try:
                 modified_since = datetime.datetime.strptime(
-                    request.headers['If-Modified-Since'].decode("latin-1"),
+                    request.headers['If-Modified-Since'],
                     HTTP_DATETIME_FORMAT
                 )
-                if modified_since >= self._last_mod_dt:
-                    resend_data = False
-            except (UnicodeDecodeError, ValueError) as error:
+                if modified_since < self._last_mod_dt:
+                    resend_data = True
+            except (UnicodeDecodeError, ValueError):
                 pass
 
-        if resend_data:
+        modified = ""
+        if not resend_data:
             try:
                 modified = await loop.run_in_executor(None, self._file_modified)
                 if 'If-None-Match' in request.headers and self._etag == request.headers['If-None-Match']:
                     return HTTPErrorResponse(304)
-                response = request.decorate_response(HTTPResponse())
-                response.body = modified
-                response.headers['Content-Length'] = str(len(modified))
-                response.headers['Content-Type'] = self._content_type
-                response.headers['ETag'] = self._etag
-                response.headers['Last-Modified'] = self._last_mod
-                return response
+                resend_data = True
             except OSError:
                 return HTTPErrorResponse(404)
-        else:
-            return HTTPErrorResponse(304)
+
+        if resend_data:
+            response = request.decorate_response(HTTPResponse())
+            response.body = modified
+            response.headers['Content-Length'] = str(len(modified))
+            response.headers['Content-Type'] = self._content_type
+            response.headers['ETag'] = self._etag
+            response.headers['Last-Modified'] = self._last_mod
+            return response
