@@ -5,6 +5,7 @@ import typing
 from ._http import *
 from ._endpoints import *
 from ._compress import *
+from ._utils import *
 
 # Global Variables
 __all__ = [
@@ -66,7 +67,7 @@ class Router:
         :param request: Request to route to an endpoint.
         :return: HTTPResponse to the request.
         """
-        route_steps = request.url.path.decode("utf-8").split('/')[1:]
+        route_steps = parse_url_escapes(safe_decode(request.url.path)).split('/')[1:]
         current_node = self._prefix_tree
 
         # Route each step, check for matching info if needed.
