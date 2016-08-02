@@ -4,6 +4,7 @@ import httptools
 
 from ._status import *
 from ._cookies import *
+from ._utils import safe_decode
 
 # Global Variables
 __all__ = [
@@ -131,7 +132,7 @@ class HTTPMessage:
             _cookies += _headers[b'Cookie']
             del _headers[b'Cookie']
 
-        self.headers = HTTPHeaders({key.decode("utf-8"): value.decode("utf-8") for key, value in _headers.items()})
+        self.headers = HTTPHeaders({safe_decode(key): safe_decode(value) for key, value in _headers.items()})
         self.cookies = HTTPCookies(_cookies)
 
     def on_body(self, body: bytes) -> None:

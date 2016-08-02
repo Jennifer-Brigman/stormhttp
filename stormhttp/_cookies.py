@@ -3,6 +3,7 @@ import datetime
 import re
 import typing
 from ._constants import HTTP_DATETIME_FORMAT
+from ._utils import safe_decode
 
 # Global Variables
 _COOKIE_REGEX = re.compile(r'([^\s=;]+)(?:=([^=;]+))?(?:;|$)')
@@ -14,7 +15,7 @@ class HTTPCookies(collections.MutableMapping):
         self._cookies = {}
         self._changed = set()
         self._meta = {}
-        for key, value in _COOKIE_REGEX.findall(raw_cookies.decode("utf-8")):
+        for key, value in _COOKIE_REGEX.findall(safe_decode(raw_cookies)):
             self._cookies[key] = value
 
     def get(self, key: str, default=None) -> str:
