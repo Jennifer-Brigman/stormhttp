@@ -1,3 +1,5 @@
+import socket
+
 import httptools
 
 from ._status import *
@@ -199,6 +201,7 @@ class HTTPRequest(HTTPMessage):
         HTTPMessage.__init__(self)
         self.match_info = {}
         self.app = None
+        self.socket = None
 
     def to_bytes(self) -> bytes:
         """
@@ -224,6 +227,23 @@ class HTTPRequest(HTTPMessage):
         response.cookies = self.cookies
         response.version = self.version
         return response
+
+    def get_peername(self) -> str:
+        """
+        Gets the name of the peer associated with the request.
+        This method also checks headers for proxy fields like 'Forwarded'.
+        :return: Name of peer.
+        """
+        if "Forwarded" in self.headers:
+            return self.headers["Forwarded"]
+        elif "X-Forwarded-For" in self.headers:
+            return self.headers["X-Forwarded-For"]
+        elif self.socket is not None:
+            try:
+                return self.socket.getpeername()[0]
+            except OSError:
+                return ""
+        return ""
 
 
 class HTTPErrorResponse(HTTPResponse):
