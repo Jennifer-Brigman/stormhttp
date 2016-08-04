@@ -6,6 +6,7 @@ import typing
 from ._router import *
 from ._http import *
 from ._endpoints import *
+from ._mountable import *
 from ._middleware import *
 
 
@@ -16,9 +17,9 @@ __all__ = [
 
 
 class Application(dict):
-    def __init__(self, loop: asyncio.AbstractEventLoop):
+    def __init__(self, loop: typing.Optional[asyncio.AbstractEventLoop]=None):
         dict.__init__({})
-        self.loop = loop
+        self.loop = loop if loop is not None else asyncio.get_event_loop()
         self.router = Router(self.loop)
         self.middlewares = []
 

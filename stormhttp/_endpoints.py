@@ -1,5 +1,4 @@
 import asyncio
-import cchardet
 import datetime
 import hashlib
 import ultrajson as json
@@ -112,9 +111,8 @@ class FileEndPoint(AbstractEndPoint):
         self._last_mod = self._last_mod_dt.strftime(HTTP_DATETIME_FORMAT)
         with open(self._path, "rb") as f:
             payload = f.read()
-            payload_enc = cchardet.detect(payload)["encoding"]
-            self._cache = payload.decode(payload_enc)
-            self._etag = hashlib.sha1(payload).hexdigest().encode("ascii")
+            self._cache = payload
+            self._etag = hashlib.sha1(payload).hexdigest()
             return payload
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
@@ -135,10 +133,10 @@ class FileEndPoint(AbstractEndPoint):
             try:
                 modified = await loop.run_in_executor(None, self._file_modified)
                 if 'If-None-Match' in request.headers and self._etag == request.headers['If-None-Match']:
-                    return HTTPErrorResponse(304)
+                    return request.decorate_response(HTTPErrorResponse(304))
                 resend_data = True
             except OSError:
-                return HTTPErrorResponse(404)
+                return request.decorate_response(HTTPErrorResponse(404))
 
         if resend_data:
             response = request.decorate_response(HTTPResponse())

@@ -4,6 +4,7 @@ import socket
 import typing
 from ._http import *
 from ._endpoints import *
+from ._mountable import *
 from ._compress import *
 from ._utils import *
 
@@ -17,12 +18,13 @@ _QVALUE_REGEX = re.compile(r'^\s?([^;]+)\s?(?:;\s?q=(\d\.\d)|;\s?level=\d+)*$')
 _PREFIX_MATCH_REGEX = re.compile(r'^\{(.+)\}$')
 _PREFIX_TREE_SENTINEL = '///'
 _PREFIX_TREE_MATCH = '/*/'
+_PREFIX_TREE_MOUNT = '/m/'
 
 
 class Router:
-    def __init__(self, loop: asyncio.AbstractEventLoop):
+    def __init__(self, loop: typing.Optional[asyncio.AbstractEventLoop]=None):
         self._prefix_tree = {}
-        self._loop = loop
+        self._loop = loop if loop is not None else asyncio.get_event_loop()
 
     def add_endpoint(self, route: str, methods: typing.Iterable[str], endpoint: AbstractEndPoint) -> None:
         """
@@ -52,6 +54,12 @@ class Router:
                 current_node[step] = {}
             current_node = current_node[step]
 
+            if _PREFIX_TREE_MOUNT in current_node:
+                raise ValueError("Route {} is a mounted route and cannot have a sub-route.".format(route))
+
+        if _PREFIX_TREE_MOUNT in current_node:
+            raise ValueError("Route {} is a mounted route and cannot have a sub-route.".format(route))
+
         if _PREFIX_TREE_SENTINEL not in current_node:
             current_node[_PREFIX_TREE_SENTINEL] = {}
         current_node = current_node[_PREFIX_TREE_SENTINEL]
@@ -61,26 +69,79 @@ class Router:
                 raise ValueError("Route {} {} has more than one endpoint registered.".format(method, route))
             current_node[method] = endpoint
 
+    def add_mount(self, prefix: str, mountable: AbstractMountable) -> None:
+        """
+        Adds a Mountable to a prefix in the prefix tree.
+        :param prefix: Prefix to mount the Mountable to.
+        :param mountable: Mountable to mount.
+        :return: None
+        """
+        route_steps = prefix.strip("/").split("/")
+        current_node = self._prefix_tree
+
+        for step in route_steps[:-1]:
+            if step == "":
+                continue
+
+            if step not in current_node:
+                current_node[step] = {}
+            current_node = current_node[step]
+            if _PREFIX_TREE_MOUNT in current_node:
+                raise ValueError("Route {} is a mounted route and cannot have a sub-route.".format(prefix))
+
+        if route_steps[-1] in current_node:
+            raise ValueError("Route {} cannot be mounted to as there is already an endpoint registered.".format(prefix))
+
+        mountable.prefix = prefix
+        if route_steps[-1] == "":
+            current_node[_PREFIX_TREE_MOUNT] = mountable
+        else:
+            current_node[route_steps[-1]] = {_PREFIX_TREE_MOUNT: mountable}
+
     async def route_request(self, request: HTTPRequest) -> HTTPResponse:
         """
         Routes an HTTPRequest through the prefix tree to an EndPoint.
         :param request: Request to route to an endpoint.
         :return: HTTPResponse to the request.
         """
-        route_steps = parse_url_escapes(safe_decode(request.url.path)).split('/')[1:]
+        route_steps = parse_url_escapes(safe_decode(request.url.path)).split('/')
         current_node = self._prefix_tree
 
         # Route each step, check for matching info if needed.
         for step in route_steps:
+            if _PREFIX_TREE_MOUNT in current_node:
+                break
+
             if step == '':
                 continue  # This ensures that trailing / also routes to same place.
+
             if step in current_node:
                 current_node = current_node[step]
+                if _PREFIX_TREE_MOUNT in current_node:
+                    break
                 continue
+
             elif _PREFIX_TREE_MATCH in current_node:
                 request.match_info[current_node[_PREFIX_TREE_MATCH]] = step
                 continue
             return request.decorate_response(HTTPErrorResponse(404))
+
+        # If there's a mount here then allow the mount to handle it.
+        if _PREFIX_TREE_MOUNT in current_node:
+            for middleware in request.app.middlewares if request.app is not None else []:
+                await middleware.on_request(request)
+
+            # Do the processing from the Mountable
+            response = await current_node[_PREFIX_TREE_MOUNT].on_request(request)
+
+            # Apply middleware post-processing
+            for middleware in request.app.middlewares if request.app is not None else []:
+                await middleware.on_response(request, response)
+
+            if request.method == "HEAD":
+                request.body = ""
+
+            return response
 
         # If we find a sentinel that means there's an EndPoint to examine.
         if _PREFIX_TREE_SENTINEL in current_node:
@@ -103,7 +164,7 @@ class Router:
 
                     # Remove the body if this is a HEAD method.
                     if request.method == "HEAD":
-                        response.body = ''
+                        response.body = ""
 
                     return response
                 except Exception as err:
@@ -134,7 +195,10 @@ class Router:
             encodings = self._sort_by_qvalue(request.headers['Accept-Encoding'])
             for enc in encodings:
                 if enc in SUPPORTED_ENCODING_TYPES:
-                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response.body.encode("utf-8"))
+                    response_body = response.body
+                    if isinstance(response_body, str):
+                        response_body = response_body.encode("utf-8")
+                    response.body = await self._loop.run_in_executor(None, encode_bytes, enc, response_body)
                     response.headers['Content-Encoding'] = enc
                     break
 
