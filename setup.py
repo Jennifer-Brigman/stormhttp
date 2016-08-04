@@ -40,7 +40,7 @@ setup(
     ],
     install_requires=[
         "aioredis==0.2.8",
-        "brotlipy==0.3.0",
+        "brotlipy==0.4.0",
         "cchardet==1.0.0",
         "cffi==1.7.0",
         "cryptography==1.4",
