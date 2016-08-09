@@ -89,7 +89,7 @@ class HTTPMessage:
         :return: None
         """
         if url != b'':
-            self.url_bytes = url.decode("utf-8")
+            self.url_bytes = safe_decode(url)
             self.url = httptools.parse_url(url)
 
     def on_header(self, name: typing.Union[bytes, None], value: typing.Union[bytes, None]) -> None:
@@ -115,9 +115,6 @@ class HTTPMessage:
         for name, value in self._header_buffer:
             if name is not None:
                 if _buf_done or _buf is None:
-                    if _buf == b'Cookie':
-                        _cookies += _headers[b'Cookie']
-                        del _headers[b'Cookie']
                     _buf = name
                     _buf_done = False
                 else:
@@ -187,14 +184,17 @@ class HTTPResponse(HTTPMessage):
         header_bytes = self.headers.to_header()
         if len(header_bytes) > 0:
             response_parts.append(header_bytes)
+
         cookie_bytes = self.cookies.to_header(set_cookie=True)
         if len(cookie_bytes) > 0:
             response_parts.append(cookie_bytes)
+
+        # Have to have two cases as body can be raw bytes if compressed.
         if isinstance(self.body, str):
             response_parts.extend(["", self.body])
             return "\r\n".join(response_parts).encode("utf-8")
         else:
-            return "\r\n".join(response_parts).encode("utf-8") + b'\r\n\r\n' + self.body
+            return b''.join(["\r\n".join(response_parts).encode("utf-8"), b'\r\n\r\n', self.body])
 
 
 class HTTPRequest(HTTPMessage):
@@ -210,11 +210,13 @@ class HTTPRequest(HTTPMessage):
         :return: Bytes received.
         """
         request_parts = ['%s %s HTTP/%s' % (self.method, self.url_bytes, self.version)]
+
         header_bytes = self.headers.to_header()
         if len(header_bytes) > 0:
             request_parts.append(header_bytes)
         if len(self.cookies) > 0:
             request_parts.append(self.cookies.to_header())
+
         request_parts.extend(['', self.body])
         return '\r\n'.join(request_parts).encode("utf-8")
 

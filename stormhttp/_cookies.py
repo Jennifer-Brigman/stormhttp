@@ -83,7 +83,7 @@ class HTTPCookies(collections.MutableMapping):
         self._cookies[cookie] = ""
         self.set_meta(cookie, expires=_COOKIE_EXPIRE_TIME)
 
-    def to_header(self, set_cookie: bool=False) -> bytes:
+    def to_header(self, set_cookie: bool=False) -> str:
         """
         Converts the cookies to bytes to be sent.
         :param set_cookie: If True, will only convert changed
