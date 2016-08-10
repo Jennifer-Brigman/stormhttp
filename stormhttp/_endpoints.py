@@ -113,7 +113,7 @@ class FileEndpoint(AbstractEndpoint):
             payload = f.read()
             self._cache = payload
             self._etag = hashlib.sha1(payload).hexdigest()
-            return payload
+        return payload
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
         resend_data = False
@@ -146,3 +146,5 @@ class FileEndpoint(AbstractEndpoint):
             response.headers['ETag'] = self._etag
             response.headers['Last-Modified'] = self._last_mod
             return response
+        else:
+            return request.decorate_response(HTTPErrorResponse(304))

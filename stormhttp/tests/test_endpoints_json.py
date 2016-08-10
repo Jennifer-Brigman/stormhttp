@@ -1,10 +1,6 @@
 import asyncio
-import os
 import unittest
-
 import httptools
-import jinja2
-
 from stormhttp.web import Application, HTTPRequest, JSONEndpoint
 
 try:
@@ -12,9 +8,6 @@ try:
     asyncio.set_event_loop(uvloop.new_event_loop())
 except ImportError:
     pass
-
-
-_TEMPLATE_LOADER = jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates"))
 
 
 def create_http_request(app) -> HTTPRequest:
