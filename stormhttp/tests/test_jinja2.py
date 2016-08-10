@@ -38,7 +38,7 @@ class TestJinja2Templating(unittest.TestCase):
             loop = asyncio.get_event_loop()
             app = Application(loop)
             stormhttp.ext.jinja2.setup(app, loader=_TEMPLATE_LOADER)
-            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2EndPoint("jinja2.tmpl", handler))
+            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2Endpoint("jinja2.tmpl", handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.body, 'a = 0')
             self.assertEqual(response.status_code, 200)
@@ -53,7 +53,7 @@ class TestJinja2Templating(unittest.TestCase):
             loop = asyncio.get_event_loop()
             app = Application(loop)
             stormhttp.ext.jinja2.setup(app, loader=_TEMPLATE_LOADER)
-            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2EndPoint("jinja2.tmpl", handler))
+            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2Endpoint("jinja2.tmpl", handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.body, 'a = 0')
             self.assertEqual(response.status_code, 200)
@@ -68,7 +68,7 @@ class TestJinja2Templating(unittest.TestCase):
             loop = asyncio.get_event_loop()
             app = Application(loop)
             stormhttp.ext.jinja2.setup(app, loader=_TEMPLATE_LOADER)
-            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2EndPoint("NOTFOUND.tmpl", handler))
+            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2Endpoint("NOTFOUND.tmpl", handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.status_code, 500)
 
@@ -81,7 +81,7 @@ class TestJinja2Templating(unittest.TestCase):
 
             loop = asyncio.get_event_loop()
             app = Application(loop)
-            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2EndPoint("jinja2.tmpl", handler))
+            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2Endpoint("jinja2.tmpl", handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.status_code, 500)
 
@@ -95,7 +95,7 @@ class TestJinja2Templating(unittest.TestCase):
             loop = asyncio.get_event_loop()
             app = Application(loop)
             stormhttp.ext.jinja2.setup(app, loader=_TEMPLATE_LOADER)
-            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2EndPoint("jinja2.tmpl", handler))
+            app.router.add_endpoint('/', ['GET'], stormhttp.ext.jinja2.Jinja2Endpoint("jinja2.tmpl", handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.status_code, 500)
 

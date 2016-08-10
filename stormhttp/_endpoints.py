@@ -11,22 +11,22 @@ from ._mimetype import EXTENSION_TO_MIMETYPE
 
 # Global Variables
 __all__ = [
-    "AbstractEndPoint",
-    "FileEndPoint",
-    "JSONEndPoint",
+    "AbstractEndpoint",
+    "FileEndpoint",
+    "JSONEndpoint",
     "ConstantEndPoint",
-    "EndPoint"
+    "Endpoint"
 ]
 
 
-class AbstractEndPoint:
+class AbstractEndpoint:
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
         raise NotImplementedError("AbstractEndPoint.on_request is not implemented.")
 
 
-class ConstantEndPoint(AbstractEndPoint):
+class ConstantEndPoint(AbstractEndpoint):
     def __init__(self, payload: str, content_type: str='text/html', content_charset: str='utf-8'):
-        AbstractEndPoint.__init__(self)
+        AbstractEndpoint.__init__(self)
         self._payload = payload
         self._content_type = '%s; charset=%s' % (content_type, content_charset)
 
@@ -37,10 +37,10 @@ class ConstantEndPoint(AbstractEndPoint):
         return response
 
 
-class EndPoint(AbstractEndPoint):
+class Endpoint(AbstractEndpoint):
     def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, HTTPResponse]],
                  content_type: bytes='text/html', content_charset: bytes='utf-8'):
-        AbstractEndPoint.__init__(self)
+        AbstractEndpoint.__init__(self)
         self._handler = handler
         self._content_type = '%s; charset=%s' % (content_type, content_charset)
 
@@ -54,9 +54,9 @@ class EndPoint(AbstractEndPoint):
         return response
 
 
-class JSONEndPoint(AbstractEndPoint):
+class JSONEndpoint(AbstractEndpoint):
     def __init__(self, handler: typing.Callable[[HTTPRequest], typing.Union[types.CoroutineType, typing.Mapping, typing.List]]):
-        AbstractEndPoint.__init__(self)
+        AbstractEndpoint.__init__(self)
         self._handler = handler
 
     async def on_request(self, loop: asyncio.AbstractEventLoop, request: HTTPRequest) -> HTTPResponse:
@@ -78,9 +78,9 @@ class JSONEndPoint(AbstractEndPoint):
             return response
 
 
-class FileEndPoint(AbstractEndPoint):
+class FileEndpoint(AbstractEndpoint):
     def __init__(self, path: str, content_type: typing.Optional[bytes]=None, encoding: str="utf-8"):
-        AbstractEndPoint.__init__(self)
+        AbstractEndpoint.__init__(self)
         self._path = path
         self._etag = None
         self._mtime = None

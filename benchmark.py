@@ -5,7 +5,7 @@ import sys
 import stormhttp
 
 
-class BenchmarkEndPoint(stormhttp.web.AbstractEndPoint):
+class BenchmarkEndPoint(stormhttp.web.AbstractEndpoint):
     def __init__(self, payload):
         self._payload = payload
         self._payload_len = str(len(self._payload))

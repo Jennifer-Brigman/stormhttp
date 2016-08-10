@@ -7,7 +7,7 @@ import stormhttp
 
 __all__ = [
     "setup",
-    "Jinja2EndPoint"
+    "Jinja2Endpoint"
 ]
 _APP_KEY = "stormhttp_jinja2_env"
 
@@ -26,7 +26,7 @@ def setup(app: stormhttp.web.Application, *args, **kwargs) -> jinja2.Environment
     return env
 
 
-class Jinja2EndPoint(stormhttp.web.AbstractEndPoint):
+class Jinja2Endpoint(stormhttp.web.AbstractEndpoint):
     def __init__(self, template_name: str, handler: typing.Callable[[stormhttp.web.HTTPRequest],
                 typing.Union[typing.Mapping, types.CoroutineType]], encoding="utf-8"):
         self._template_name = template_name

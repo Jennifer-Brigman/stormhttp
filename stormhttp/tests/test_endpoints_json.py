@@ -5,7 +5,7 @@ import unittest
 import httptools
 import jinja2
 
-from stormhttp.web import Application, HTTPRequest, JSONEndPoint
+from stormhttp.web import Application, HTTPRequest, JSONEndpoint
 
 try:
     import uvloop
@@ -34,7 +34,7 @@ class TestJSONEndpoint(unittest.TestCase):
 
             loop = asyncio.get_event_loop()
             app = Application(loop)
-            app.router.add_endpoint('/', ['GET'], JSONEndPoint(handler))
+            app.router.add_endpoint('/', ['GET'], JSONEndpoint(handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.body, '{"a":0}')
             self.assertEqual(response.status_code, 200)
@@ -48,7 +48,7 @@ class TestJSONEndpoint(unittest.TestCase):
 
             loop = asyncio.get_event_loop()
             app = Application(loop)
-            app.router.add_endpoint('/', ['GET'], JSONEndPoint(handler))
+            app.router.add_endpoint('/', ['GET'], JSONEndpoint(handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.body, '{"a":0}')
             self.assertEqual(response.status_code, 200)
@@ -62,7 +62,7 @@ class TestJSONEndpoint(unittest.TestCase):
 
             loop = asyncio.get_event_loop()
             app = Application(loop)
-            app.router.add_endpoint('/', ['GET'], JSONEndPoint(handler))
+            app.router.add_endpoint('/', ['GET'], JSONEndpoint(handler))
             response = await app.router.route_request(create_http_request(app))
             self.assertEqual(response.status_code, 500)
 

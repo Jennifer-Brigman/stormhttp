@@ -43,7 +43,7 @@ class VirtualDirectoryMount(AbstractMountable):
             virtual_path = os.path.join(virtual_path, "index.html")
 
         if virtual_path not in self._endpoints:
-            self._endpoints[virtual_path] = FileEndPoint(virtual_path)
+            self._endpoints[virtual_path] = FileEndpoint(virtual_path)
 
         return await self._endpoints[virtual_path].on_request(request.app.loop, request)
 

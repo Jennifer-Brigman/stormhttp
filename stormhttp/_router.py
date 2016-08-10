@@ -11,8 +11,8 @@ from ._utils import *
 # Global Variables
 __all__ = [
     "Router",
-    "AbstractEndPoint",
-    "FileEndPoint"
+    "AbstractEndpoint",
+    "FileEndpoint"
 ]
 _QVALUE_REGEX = re.compile(r'^\s?([^;]+)\s?(?:;\s?q=(\d\.\d)|;\s?level=\d+)*$')
 _PREFIX_MATCH_REGEX = re.compile(r'^\{(.+)\}$')
@@ -26,7 +26,7 @@ class Router:
         self._prefix_tree = {}
         self._loop = loop if loop is not None else asyncio.get_event_loop()
 
-    def add_endpoint(self, route: str, methods: typing.Iterable[str], endpoint: AbstractEndPoint) -> None:
+    def add_endpoint(self, route: str, methods: typing.Iterable[str], endpoint: AbstractEndpoint) -> None:
         """
         Adds a single EndPoint to the prefix tree, possibly in multiple locations
         if there are multiple methods in the same route. An error is raised if there
