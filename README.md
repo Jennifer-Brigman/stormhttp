@@ -24,9 +24,9 @@ r.cookies.meta(b'a', http_only=True, expires=datetime.datetime.utcnow())
 r.body = b'Hello, world!'
 print(r.to_bytes().encode("utf-8"))
 
-HTTP/2.0 200 OK
-CONTENT-TYPE: text/html
-SET-COOKIE: foo=bar; HttpOnly; Expires=2016-08-14T21:01:34;
-
-Hello, world!
+# HTTP/2.0 200 OK
+# CONTENT-TYPE: text/html
+# SET-COOKIE: foo=bar; HttpOnly; Expires=2016-08-14T21:01:34;
+#
+# Hello, world!
 ```
