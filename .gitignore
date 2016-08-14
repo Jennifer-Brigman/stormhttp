@@ -1,0 +1,11 @@
+*~
+*.pyc
+*.pyo
+*__pycache__*
+*.idea
+*.key
+*dist
+*.egg*
+.coverage
+build/
+.cache/
