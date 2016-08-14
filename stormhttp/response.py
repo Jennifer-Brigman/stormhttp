@@ -28,5 +28,4 @@ class HttpResponse(HttpMessage):
             parts.append(self.cookies.to_bytes(set_cookie=True))
         parts.append(b'')
         parts.append(self.body)
-        print(parts)
         return b'\r\n'.join(parts)

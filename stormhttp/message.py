@@ -61,16 +61,9 @@ class HttpMessage:
             _headers[_key] = b''.join(_val_buffer)
 
         self.headers.update(_headers)
-        print(self.headers)
         if b'Cookie' in self.headers:
-            try:
-                print(self.headers[b'Cookie'])
-                self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(self.headers[b'Cookie'])})
-                del self.headers[b'Cookie']
-            except Exception as err:
-                print(str(type(err)))
-                print(str(err))
-        print(self.headers)
+            self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(self.headers[b'Cookie'])})
+            del self.headers[b'Cookie']
 
         self._is_header_complete = True
 
