@@ -6,7 +6,7 @@ from .request import *
 from .response import *
 from .url import *
 
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 __all__ = cookies.__all__ + \
           headers.__all__ + \
           message.__all__ + \
