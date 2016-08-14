@@ -18,17 +18,16 @@ class PyTest(test):
 setup(
     name="stormhttp",
     packages=[
-        "stormhttp",
-        "stormhttp.ext"
+        "stormhttp"
     ],
     version=__version__,
-    description="Performant asynchronous web application framework.",
+    description="Lightning-fast HTTP primitives based on httptools",
     license="Apache 2",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
     url="https://github.com/SethMichaelLarson/stormhttp",
     download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + __version__,
-    keywords=["web", "framework", "async"],
+    keywords=["web"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Intended Audience :: Developers",
@@ -39,17 +38,7 @@ setup(
         "Topic :: Internet :: WWW/HTTP"
     ],
     install_requires=[
-        "aioredis==0.2.8",
-        "brotlipy==0.4.0",
-        "cchardet==1.0.0",
-        "cffi==1.7.0",
-        "cryptography==1.4",
-        "hiredis==0.2.0",
-        "httptools==0.0.9",
-        "pycparser==2.14",
-        "ultrajson==1.35",
-        "uuid==1.30",
-        "Jinja2==2.8"
+        "httptools>=0.0.9"
     ],
     tests_require=[
         "pytest",
