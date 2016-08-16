@@ -19,8 +19,8 @@ r.version = b'2.0'
 r.status = 'OK'
 r.status_code = 200
 r.headers[b'Content-Type'] = b'text/html'
-r.cookies[b'a'] = b'1'
-r.cookies.meta(b'a', http_only=True, expires=datetime.datetime.utcnow())
+r.cookies[b'foo'] = b'bar'
+r.cookies.meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
 r.body = b'Hello, world!'
 print(r.to_bytes().encode("utf-8"))
 
