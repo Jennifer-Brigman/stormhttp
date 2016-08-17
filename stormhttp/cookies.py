@@ -70,7 +70,6 @@ class HttpCookies(dict):
                     continue
                 cookie_crumbs = []
                 cookie_crumbs.append(b'SET-COOKIE:')
-                print(cookie, self.get(cookie))
                 cookie_crumbs.append(b'%b=%b;' % (cookie, self.get(cookie)))
                 domain, path, expires, max_age, http_only, secure = self._meta.get(cookie, _DEFAULT_COOKIE_META)
                 if domain is not None:
