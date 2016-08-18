@@ -13,16 +13,31 @@ Lightning-quick HTTP primitives built on [httptools](https://github.com/MagicSta
 import datetime
 import stormhttp
 
+# Parsing a request
+req = stormhttp.HttpRequest()
+par = stormhttp.HttpParser(req)
+par.feed_data(b'''GET /login HTTP/1.1
+Host: www.example.com
+Cookie: a=1; b=2;
+
+''')
+
+print(req.method)           # b'GET'
+print(req.version)          # b'1.1'
+print(req.headers[b'Host']) # b'www.example.com' 
+print(req.cookies[b'a'])    # b'1'
+print(req.url.path)         # b'/login'
+
 # Crafting a response
-r = stormhttp.HttpResponse()
-r.version = b'2.0'
-r.status = 'OK'
-r.status_code = 200
-r.headers[b'Content-Type'] = b'text/html'
-r.cookies[b'foo'] = b'bar'
-r.cookies.meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
-r.body = b'Hello, world!'
-print(r.to_bytes().encode("utf-8"))
+res = stormhttp.HttpResponse()
+res.version = b'2.0'
+res.status = 'OK'
+res.status_code = 200
+res.headers[b'Content-Type'] = b'text/html'
+res.cookies[b'foo'] = b'bar'
+res.cookies.meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
+res.body = b'Hello, world!'
+print(res.to_bytes().decode("utf-8"))
 
 # HTTP/2.0 200 OK
 # CONTENT-TYPE: text/html
