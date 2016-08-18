@@ -22,6 +22,7 @@ Cookie: a=1; b=2;
 
 ''')
 
+# Accessing the parsed values
 print(req.method)           # b'GET'
 print(req.version)          # b'1.1'
 print(req.headers[b'Host']) # b'www.example.com' 
@@ -37,6 +38,8 @@ res.headers[b'Content-Type'] = b'text/html'
 res.cookies[b'foo'] = b'bar'
 res.cookies.meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
 res.body = b'Hello, world!'
+
+# Sending the bytes over the wire
 print(res.to_bytes().decode("utf-8"))
 
 # HTTP/2.0 200 OK
