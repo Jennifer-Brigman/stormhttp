@@ -44,7 +44,7 @@ print(res.to_bytes().decode("utf-8"))
 
 # HTTP/2.0 200 OK
 # CONTENT-TYPE: text/html
-# SET-COOKIE: foo=bar; HttpOnly; Expires=2016-08-14T21:01:34;
+# SET-COOKIE: foo=bar; HttpOnly; Expires=Fri, 26 Aug 2016 20:13:10 GMT;
 #
 # Hello, world!
 ```
