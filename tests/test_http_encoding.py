@@ -29,7 +29,7 @@ class TestHttpEncodings(unittest.TestCase):
 
         response.set_encoding(b'deflate')
         self.assertEqual(response.headers[b'Content-Encoding'], b'deflate')
-        self.assertEqual(response.body, b'KLJN\xc4\x8d\x00\xb2\x0c\x0b}')
+        self.assertEqual(response.body, b'KLJN\xc4\x8d\x00')
 
         response.set_encoding(b'identity')
         self.assertEqual(response.headers[b'Content-Encoding'], b'identity')
@@ -46,7 +46,7 @@ class TestHttpEncodings(unittest.TestCase):
 
         response.set_encoding(b'gzip')
         self.assertEqual(response.headers[b'Content-Encoding'], b'gzip')
-        self.assertEqual(response.body[6:], b'\xc2W\x02\xffKLJN\xc4\x8d\x00\x81\xfc\xb1H\x1e\x00\x00\x00')
+        self.assertEqual(response.body[10:], b'KLJN\xc4\x8d\x00\x81\xfc\xb1H\x1e\x00\x00\x00')
 
         response.set_encoding(b'identity')
         self.assertEqual(response.headers[b'Content-Encoding'], b'identity')
@@ -64,8 +64,8 @@ class TestHttpEncodings(unittest.TestCase):
 
         response.set_encoding(b'gzip')
         self.assertEqual(response.headers[b'Content-Encoding'], b'gzip')
-        self.assertEqual(response.body[6:], b'\xc2W\x02\xffKLJN\xc4\x8d\x00\x81\xfc\xb1H\x1e\x00\x00\x00')
+        self.assertEqual(response.body[10:], b'KLJN\xc4\x8d\x00\x81\xfc\xb1H\x1e\x00\x00\x00')
 
         response.set_encoding(b'deflate')
         self.assertEqual(response.headers[b'Content-Encoding'], b'deflate')
-        self.assertEqual(response.body, b'KLJN\xc4\x8d\x00\xb2\x0c\x0b}')
+        self.assertEqual(response.body, b'KLJN\xc4\x8d\x00')

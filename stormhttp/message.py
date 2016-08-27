@@ -56,7 +56,7 @@ class HttpMessage:
             elif current_encoding == b'gzip':
                 self.body = gzip.GzipFile(fileobj=io.BytesIO(self.body), mode="rb").read()
             elif current_encoding == b'deflate':
-                self.body = zlib.decompress(b'x\x9c' + self.body)
+                self.body = zlib.decompress(self.body, -zlib.MAX_WBITS)
 
         # Re-encoding with the desired encoding.
         if encoding != b'identity':
@@ -67,7 +67,8 @@ class HttpMessage:
                 gzip.GzipFile(fileobj=out, mode="wb").write(self.body)
                 self.body = out.getvalue()
             elif encoding == b'deflate':
-                self.body = zlib.compress(self.body)[2:]
+                deflate = zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
+                self.body = deflate.compress(self.body) + deflate.flush()
 
         # Optionally set the headers.
         if set_headers:
