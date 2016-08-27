@@ -1,5 +1,6 @@
 import datetime
 import typing
+from . import HTTP_DATETIME_FORMAT
 
 
 # Global Variables
@@ -76,8 +77,7 @@ class HttpCookies(dict):
                 if path is not None:
                     cookie_crumbs.append(b'Path=%b;' % path)
                 if expires is not None:
-                    cookie_crumbs.append(b'Expires=%b;' % expires.strftime(
-                        "%a, %d %b %Y %H:%M:%S GMT;").encode("ascii"))
+                    cookie_crumbs.append(b'Expires=%b;' % expires.strftime(HTTP_DATETIME_FORMAT).encode("ascii"))
                 if max_age is not None:
                     cookie_crumbs.append(b'MaxAge=%d;' % max_age)
                 cookies.append(b' '.join(cookie_crumbs))
