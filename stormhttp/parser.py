@@ -18,7 +18,6 @@ class HttpParser:
             self.set_target(message)
 
     def set_target(self, message: HttpMessage):
-        assert isinstance(message, HttpMessage)
         if isinstance(message, HttpRequest):
             self._parser = httptools.HttpRequestParser(message)
         else:

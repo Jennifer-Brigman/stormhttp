@@ -9,20 +9,15 @@ class HttpHeaders(dict):
         self.update(*args, **kwargs)
 
     def __getitem__(self, key: bytes) -> bytes:
-        assert isinstance(key, bytes)
         return dict.__getitem__(self, key.upper())
 
     def __setitem__(self, key: bytes, val: bytes) -> None:
-        assert isinstance(key, bytes)
-        assert isinstance(val, bytes)
         dict.__setitem__(self, key.upper(), val)
 
     def __delitem__(self, key: bytes) -> None:
-        assert isinstance(key, bytes)
         dict.__delitem__(self, key.upper())
 
     def __contains__(self, key: bytes) -> bool:
-        assert isinstance(key, bytes)
         return dict.__contains__(self, key.upper())
 
     def __repr__(self):

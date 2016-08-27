@@ -16,12 +16,9 @@ class HttpCookies(dict):
         self.update(*args, **kwargs)
 
     def __getitem__(self, key: bytes) -> bytes:
-        assert isinstance(key, bytes)
         dict.__getitem__(self, key)
 
     def __setitem__(self, key: bytes, val: bytes) -> None:
-        assert isinstance(key, bytes)
-        assert isinstance(val, bytes)
         dict.__setitem__(self, key, val)
         self._changed[key] = True
 
@@ -68,22 +65,21 @@ class HttpCookies(dict):
             for cookie, changed in self._changed.items():
                 if not changed:
                     continue
-                cookie_crumbs = []
-                cookie_crumbs.append(b'SET-COOKIE:')
-                cookie_crumbs.append(b'%b=%b;' % (cookie, self.get(cookie)))
+                cookie_crumbs = [b'SET-COOKIE:', b'%b=%b;' % (cookie, self.get(cookie))]
                 domain, path, expires, max_age, http_only, secure = self._meta.get(cookie, _DEFAULT_COOKIE_META)
+                if http_only:
+                    cookie_crumbs.append(b'HttpOnly;')
+                if secure:
+                    cookie_crumbs.append(b'Secure;')
                 if domain is not None:
                     cookie_crumbs.append(b'Domain=%b;' % domain)
                 if path is not None:
                     cookie_crumbs.append(b'Path=%b;' % path)
                 if expires is not None:
-                    cookie_crumbs.append(b'Expires=%b;' % expires.isoformat().encode("ascii"))
+                    cookie_crumbs.append(b'Expires=%b;' % expires.strftime(
+                        "%a, %d %b %Y %H:%M:%S GMT;").encode("ascii"))
                 if max_age is not None:
                     cookie_crumbs.append(b'MaxAge=%d;' % max_age)
-                if http_only:
-                    cookie_crumbs.append(b'HttpOnly;')
-                if secure:
-                    cookie_crumbs.append(b'Secure;')
                 cookies.append(b' '.join(cookie_crumbs))
             return b'\r\n'.join(cookies)
         else:
