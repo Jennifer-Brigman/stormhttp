@@ -1,1 +1,2 @@
 httptools>=0.0.9
+brotlipy>=0.5.1

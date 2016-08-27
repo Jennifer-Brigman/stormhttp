@@ -1,7 +1,7 @@
 import unittest
 
 
-class TestHTTPResponse(unittest.TestCase):
+class TestHttpResponse(unittest.TestCase):
     def test_create_response(self):
         from stormhttp import HttpResponse
         response = HttpResponse()

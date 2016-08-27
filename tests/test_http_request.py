@@ -1,7 +1,7 @@
 import unittest
 
 
-class TestHTTPRequest(unittest.TestCase):
+class TestHttpRequest(unittest.TestCase):
     def test_create_request(self):
         from stormhttp import HttpRequest, HttpURL
         request = HttpRequest()
