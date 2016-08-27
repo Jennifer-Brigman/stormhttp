@@ -11,7 +11,7 @@ __all__ = [
 
 
 class HttpParser:
-    def __init__(self, message: typing.Optional[HttpMessage]):
+    def __init__(self, message: typing.Optional[HttpMessage]=None):
         self._message = None
         self._parser = None
         if message is not None:
