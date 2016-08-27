@@ -14,5 +14,3 @@ __all__ = cookies.__all__ + \
           request.__all__ + \
           response.__all__ + \
           url.__all__
-
-HTTP_DATETIME_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
