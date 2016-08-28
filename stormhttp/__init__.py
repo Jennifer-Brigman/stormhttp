@@ -20,7 +20,7 @@ from .request import *
 from .response import *
 from .url import *
 
-__version__ = "0.0.17"
+__version__ = "0.0.18"
 __all__ = cookies.__all__ + \
           headers.__all__ + \
           message.__all__ + \

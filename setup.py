@@ -38,7 +38,8 @@ setup(
         "Topic :: Internet :: WWW/HTTP"
     ],
     install_requires=[
-        "httptools>=0.0.9"
+        "httptools>=0.0.9",
+        "brotlipy>=0.5.1"
     ],
     tests_require=[
         "pytest",
