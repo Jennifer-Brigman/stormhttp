@@ -57,6 +57,15 @@ class TestHttpRequest(unittest.TestCase):
             self.assertEqual(request.method, b'GET')
             self.assertEqual(request.version, b'1.1')
             self.assertEqual(request.url.raw, b'/')
-            self.assertEqual(request.headers.get(b'Accept', None), b'text/html')
-            self.assertEqual(request.headers.get(b'Accept-Encoding', None), b'utf-8')
+            self.assertEqual(request.headers.get(b'Accept', None), [b'text/html'])
+            self.assertEqual(request.headers.get(b'Accept-Encoding', None), [b'utf-8'])
             self.assertEqual(request.cookies.get(b'a', None), b'1')
+
+    def test_http_multiple_headers(self):
+        from stormhttp import HttpRequest, HttpParser
+
+        data = b'GET / HTTP/1.1\r\nACCEPT: text/html\r\nACCEPT: application/json\r\n\r\n'
+        request = HttpRequest()
+        parser = HttpParser(request)
+        parser.feed_data(data)
+        self.assertEqual(request.headers.get(b'Accept', None), [b'text/html', b'application/json'])

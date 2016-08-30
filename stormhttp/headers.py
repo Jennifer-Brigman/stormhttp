@@ -1,4 +1,5 @@
-# Global Variables
+import typing
+
 __all__ = [
     "HttpHeaders"
 ]
@@ -11,7 +12,9 @@ class HttpHeaders(dict):
     def __getitem__(self, key: bytes) -> bytes:
         return dict.__getitem__(self, key.upper())
 
-    def __setitem__(self, key: bytes, val: bytes) -> None:
+    def __setitem__(self, key: bytes, val: typing.Union[bytes, typing.Iterable[bytes]]) -> None:
+        if isinstance(val, bytes):
+            val = [val]
         dict.__setitem__(self, key.upper(), val)
 
     def __delitem__(self, key: bytes) -> None:
@@ -31,4 +34,6 @@ class HttpHeaders(dict):
             self[key] = val
 
     def to_bytes(self) -> bytes:
-        return b'\r\n'.join(b'%b: %b' % (key, val) for key, val in self.items())
+        return b'\r\n'.join(
+            (b'\r\n'.join([b'%b: %b' % (key, val) for val in list_val])) for key, list_val in self.items()
+        )

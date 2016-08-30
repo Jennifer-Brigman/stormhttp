@@ -45,7 +45,7 @@ class HttpMessage:
         :return: None
         """
         assert encoding in _SUPPORTED_ENCODINGS
-        current_encoding = self.headers.get(b'Content-Encoding', b'identity')
+        current_encoding = self.headers.get(b'Content-Encoding', [b'identity'])[0]
         if current_encoding == encoding or len(self.body) == 0:
             return  # No-op if the encoding is already correct.
 
@@ -91,7 +91,7 @@ class HttpMessage:
                 if _key_buffer is None:
                     _key_buffer = [key]
                     if _key is not None:
-                        _headers[_key] = b''.join(_val_buffer)
+                        _headers[_key] = _headers.get(_key, []) + [b''.join(_val_buffer)]
                     _key = None
                 else:
                     _key_buffer.append(key)
@@ -102,11 +102,11 @@ class HttpMessage:
                     _val_buffer = []
                 _val_buffer.append(val)
         if _key is not None:
-            _headers[_key] = b''.join(_val_buffer)
+            _headers[_key] = _headers.get(_key, []) + [b''.join(_val_buffer)]
 
         self.headers.update(_headers)
         if b'Cookie' in self.headers:
-            self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(self.headers[b'Cookie'])})
+            self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(b'; '.join(self.headers[b'Cookie']))})
             del self.headers[b'Cookie']
 
         self._is_header_complete = True
