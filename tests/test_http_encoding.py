@@ -69,3 +69,20 @@ class TestHttpEncodings(unittest.TestCase):
         response.set_encoding(b'deflate')
         self.assertEqual(response.headers[b'Content-Encoding'], [b'deflate'])
         self.assertEqual(response.body, b'KLJN\xc4\x8d\x00')
+
+    def test_encoding_body_string(self):
+        from stormhttp import HttpResponse
+
+        response = HttpResponse()
+        response.body = b'KLJN\xc4\x8d\x00'
+        response.headers[b'Content-Encoding'] = [b'deflate']
+
+        self.assertEqual(response.body_string(), "abc" * 10)
+
+    def test_encoding_body_json(self):
+        from stormhttp import HttpResponse
+
+        response = HttpResponse()
+        response.body = b'{"a": [1, 2, 3]}'
+
+        self.assertEqual(response.body_json(), {"a": [1, 2, 3]})

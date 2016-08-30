@@ -1,7 +1,10 @@
 import brotli
+import cchardet
 import gzip
+import json
 import io
 import re
+import sys
 import typing
 import zlib
 from .headers import HttpHeaders
@@ -74,6 +77,33 @@ class HttpMessage:
         if set_headers:
             self.headers[b'Content-Length'] = b'%d' % len(self.body)
             self.headers[b'Content-Encoding'] = encoding
+
+    def body_string(self) -> str:
+        """
+        Decodes the body of the HTTP message as a string
+        while attempting to decode the body. If the body is
+        not in an 'identity' character encoding, does the decoding
+        and puts the body back into the encoding.
+        :return: Body decoded as a string.
+        """
+        encoding = self.headers.get(b'Content-Encoding', [b'identity'])[0]
+        if encoding != b'identity':
+            self.set_encoding(b'identity', set_headers=False)
+        try:
+            body = self.body.decode(sys.getdefaultencoding())
+        except UnicodeDecodeError:
+            body = self.body.decode(cchardet.detect(self.body)["encoding"])
+        if encoding != b'identity':
+            self.set_encoding(encoding, set_headers=False)
+        return body
+
+    def body_json(self, loads=json.loads) -> typing.Union[dict, list]:
+        """
+        Loads the body as a JSON object if it is valid JSON.
+        :param loads: Function to load the body as JSON with. Default: json.loads
+        :return: The body as JSON.
+        """
+        return loads(self.body_string())
 
     # httptools parser interface
 
