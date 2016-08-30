@@ -25,7 +25,7 @@ Cookie: a=1; b=2;
 # Accessing the parsed values
 print(req.method)           # b'GET'
 print(req.version)          # b'1.1'
-print(req.headers[b'Host']) # b'www.example.com' 
+print(req.headers[b'Host']) # [b'www.example.com']
 print(req.cookies[b'a'])    # b'1'
 print(req.url.path)         # b'/login'
 
@@ -36,7 +36,7 @@ res.status = 'OK'
 res.status_code = 200
 res.headers[b'Content-Type'] = b'text/html'
 res.cookies[b'foo'] = b'bar'
-res.cookies.meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
+res.cookies.set_meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
 res.body = b'Hello, world!'
 
 # Sending the bytes over the wire

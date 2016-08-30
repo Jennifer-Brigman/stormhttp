@@ -36,7 +36,7 @@ class HttpCookies(dict):
     def is_changed(self) -> bool:
         return any(self._changed.values())
 
-    def meta(self, cookie: bytes, domain: typing.Optional[bytes]=None, path: typing.Optional[bytes]=None,
+    def set_meta(self, cookie: bytes, domain: typing.Optional[bytes]=None, path: typing.Optional[bytes]=None,
                  expires: typing.Optional[datetime.datetime]=None, max_age: typing.Optional[int]=None,
                  http_only: bool=False, secure: bool=False):
         if cookie not in self:
@@ -51,6 +51,12 @@ class HttpCookies(dict):
                 expires = max_age_dt
         self._meta[cookie] = (domain, path, expires, max_age, http_only, secure)
         self._changed[cookie] = True
+
+    def get_meta(self, cookie: bytes) -> typing.Tuple[typing.Optional[bytes], typing.Optional[bytes],
+                                                      typing.Optional[datetime.datetime], bool, bool]:
+        if cookie not in self:
+            raise KeyError(str(cookie))
+        return self._meta.get(cookie, _DEFAULT_COOKIE_META)
 
     def expire(self, cookie: bytes):
         if cookie not in self:

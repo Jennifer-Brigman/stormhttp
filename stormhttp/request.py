@@ -1,4 +1,5 @@
 import httptools
+import typing
 from .message import HttpMessage
 from .url import HttpURL
 
@@ -9,8 +10,11 @@ __all__ = [
 
 
 class HttpRequest(HttpMessage):
-    def __init__(self):
+    def __init__(self, headers: typing.Iterable[typing.Tuple[bytes, typing.Union[bytes, typing.Iterable]]]=None):
         HttpMessage.__init__(self)
+        if headers is not None:
+            for key, val in headers:
+                self.headers[key] = val
         self.url = None
         self.method = b''
 
