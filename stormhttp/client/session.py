@@ -88,12 +88,12 @@ class ClientSession:
         request.body = body
         request.headers[b'Host'] = host
         request.on_url(url)
-        if len(self.headers) > 0:
-            for key, val in self.headers.items():
-                request.headers[key] = val
-        if headers is not None:
-            for key, val in headers.items():
-                request.headers[key] = val
+
+        # Apply headers.
+        for key, val in self.headers.items():
+            request.headers[key] = val
+        for key, val in headers.items():
+            request.headers[key] = val
 
         response = HttpResponse()
         response_error = False

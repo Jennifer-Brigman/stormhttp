@@ -14,8 +14,8 @@ import datetime
 import stormhttp
 
 # Parsing a request
-req = stormhttp.HttpRequest()
-par = stormhttp.HttpParser(req)
+req = stormhttp.primitives.HttpRequest()
+par = stormhttp.primitives.HttpParser(req)
 par.feed_data(b'''GET /login HTTP/1.1
 Host: www.example.com
 Cookie: a=1; b=2;
@@ -30,7 +30,7 @@ print(req.cookies[b'a'])    # b'1'
 print(req.url.path)         # b'/login'
 
 # Crafting a response
-res = stormhttp.HttpResponse()
+res = stormhttp.primitives.HttpResponse()
 res.version = b'2.0'
 res.status = 'OK'
 res.status_code = 200

@@ -15,6 +15,7 @@ __all__ = [
     "HttpMessage"
 ]
 _COOKIE_REGEX = re.compile(b'([^\\s=;]+)(?:=([^=;]+))?(?:;|$)')
+_CHARSET_REGEX = re.compile(b'[^/]+/[^/]+;\s*charset=([^=;]+)')
 _SUPPORTED_ENCODINGS = {b'gzip', b'deflate', b'br', b'identity'}
 
 
@@ -29,6 +30,9 @@ class HttpMessage:
         self._header_buffer = []
         self._is_header_complete = False
         self._is_complete = False
+
+    def __len__(self):
+        return len(self.body)
 
     def is_complete(self) -> bool:
         return self._is_complete
@@ -86,15 +90,32 @@ class HttpMessage:
         and puts the body back into the encoding.
         :return: Body decoded as a string.
         """
+        # If the body is encoded or compressed, need to decompress it before getting the string.
         encoding = self.headers.get(b'Content-Encoding', [b'identity'])[0]
         if encoding != b'identity':
             self.set_encoding(b'identity', set_headers=False)
-        try:
-            body = self.body.decode(sys.getdefaultencoding())
-        except UnicodeDecodeError:
-            body = self.body.decode(cchardet.detect(self.body)["encoding"])
+        body = None
+
+        # If the headers are giving us a hint, then try them first.
+        charset = _CHARSET_REGEX.match(self.headers.get(b'Content-Type', [b''])[0])
+        if charset is not None:
+            charset = charset.group(1).decode("utf-8")
+            try:
+                body = self.body.decode(charset)
+            except UnicodeDecodeError:
+                pass
+
+        # Otherwise try the system default encoding followed by cchardet attempting to detect encoding.
+        if body is None:
+            try:
+                body = self.body.decode(sys.getdefaultencoding())
+            except UnicodeDecodeError:
+                body = self.body.decode(cchardet.detect(self.body)["encoding"])
+
+        # Revert back to the old encoding.
         if encoding != b'identity':
             self.set_encoding(encoding, set_headers=False)
+
         return body
 
     def body_json(self, loads=json.loads) -> typing.Union[dict, list]:
