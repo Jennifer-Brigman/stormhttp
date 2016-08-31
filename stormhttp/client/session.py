@@ -1,6 +1,7 @@
 import asyncio
 import cchardet
 import httptools
+import socket
 import ssl as _ssl
 import typing
 from ..primitives import HttpRequest, HttpResponse, HttpParser, HttpHeaders
@@ -29,6 +30,12 @@ class ClientSession:
         if headers is not None:
             self.headers.update(self.headers)
 
+    def __del__(self):
+        if self._writer is not None:
+            self._writer.close()
+        self._writer = None
+        self._reader = None
+
     async def open(self, address: typing.Tuple[bytes, int], ssl: typing.Optional[_ssl.SSLContext]=None) -> None:
         host, port = address
         if self._reader is None or self._host != host or self._port != port:
@@ -40,6 +47,11 @@ class ClientSession:
                         host=host.decode(cchardet.detect(host)["encoding"]), port=port,
                         loop=self._loop, ssl=ssl
                     )
+
+                    # Set TCP_NODELAY to allow writes to be minimally buffered.
+                    sock = self._writer.transport.get_extra_info("socket")
+                    sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, True)
+
                 except _ssl.SSLError as error:
                     if _CERTIFICATE_VERIFY_FAILED in str(error):
                         raise SslCertificateVerificationError("Error occurred while verifying the ceritificate.")
@@ -60,7 +72,6 @@ class ClientSession:
     async def request(self, url: bytes, method: bytes, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
                         body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
                         buffer_length: int=65536, ssl: _ssl.SSLContext=None) -> HttpResponse:
-
         parsed_url = httptools.parse_url(url)
         host = parsed_url.host
         schema = parsed_url.schema.lower()
