@@ -72,6 +72,22 @@ class ClientSession:
     async def request(self, url: bytes, method: bytes, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
                         body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
                         buffer_length: int=65536, ssl: _ssl.SSLContext=None) -> HttpResponse:
+        """
+        Submits a request to the URL given in the function. The request inherits all
+        values that are given to it by the ClientSession including HTTP version, headers,
+        cookies (if applicable for that domain) as well as all values passed in to the
+        function. Uses the system default for SSL/TLS on HTTPS unless given a different
+        SSLContext. Follow redirects by default but the behaviour can be overridden.
+        :param url: URL to send the request to.
+        :param method: HTTP method to use.
+        :param headers: Headers to apply to the request.
+        :param body: Body of the request.
+        :param allow_redirects: If True, allow the request to automatically respond to redirects.
+        :param max_redirects: Maximum number of redirects allowed before canceling request.
+        :param buffer_length: Maximum nuber of bytes to read per cycle of reading and parsing.
+        :param ssl: SSLContext object if the system default SSL/TLS context is not acceptable.
+        :return: HttpResponse object.
+        """
         parsed_url = httptools.parse_url(url)
         host = parsed_url.host
         schema = parsed_url.schema.lower()
@@ -133,3 +149,20 @@ class ClientSession:
             return response
         else:
             return response
+
+    async def get(self, url: bytes,
+                  headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
+                  body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
+                  buffer_length: int=65536, ssl: _ssl.SSLContext=None) -> HttpResponse:
+        """
+        See documentation of ClientSession.request(). Uses similar function signature without 'method'.
+        """
+        return await self.request(url, b'GET', headers, body, allow_redirects, max_redirects, buffer_length, ssl)
+
+    async def post(self, url: bytes, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
+                   body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
+                   buffer_length: int=65536, ssl: _ssl.SSLContext=None) -> HttpResponse:
+        """
+        See documentation of ClientSession.request(). Uses similar function signature without 'method'.
+        """
+        return await self.request(url, b'POST', headers, body, allow_redirects, max_redirects, buffer_length, ssl)
