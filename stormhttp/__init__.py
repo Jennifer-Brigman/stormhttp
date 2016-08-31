@@ -12,19 +12,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from .cookies import *
-from .headers import *
-from .message import *
-from .parser import *
-from .request import *
-from .response import *
-from .url import *
+from . import client, errors, primitives
 
-__version__ = "0.0.20"
-__all__ = cookies.__all__ + \
-          headers.__all__ + \
-          message.__all__ + \
-          parser.__all__ + \
-          request.__all__ + \
-          response.__all__ + \
-          url.__all__
+__version__ = "0.0.21"
+__all__ = [
+    "client",
+    "errors",
+    "primitives"
+]

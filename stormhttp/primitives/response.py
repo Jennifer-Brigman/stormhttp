@@ -9,7 +9,7 @@ __all__ = [
 
 
 class HttpResponse(HttpMessage):
-    def __init__(self, headers: typing.Iterable[typing.Tuple[bytes, typing.Union[bytes, typing.Iterable]]]=None):
+    def __init__(self, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None):
         HttpMessage.__init__(self)
         if headers is not None:
             for key, val in headers:

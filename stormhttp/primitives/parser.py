@@ -6,7 +6,8 @@ from .response import HttpResponse
 
 # Global Variables
 __all__ = [
-    "HttpParser"
+    "HttpParser",
+    "HttpParserError"
 ]
 
 

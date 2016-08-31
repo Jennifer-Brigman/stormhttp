@@ -1,7 +1,7 @@
 import httptools
 import typing
 from .message import HttpMessage
-from .url import HttpURL
+from .url import HttpUrl
 
 # Global Variables
 __all__ = [
@@ -10,7 +10,7 @@ __all__ = [
 
 
 class HttpRequest(HttpMessage):
-    def __init__(self, headers: typing.Iterable[typing.Tuple[bytes, typing.Union[bytes, typing.Iterable]]]=None):
+    def __init__(self, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None):
         HttpMessage.__init__(self)
         if headers is not None:
             for key, val in headers:
@@ -21,7 +21,7 @@ class HttpRequest(HttpMessage):
     def on_url(self, raw_url: bytes):
         if raw_url != b'':
             url = httptools.parse_url(raw_url)
-            self.url = HttpURL(raw_url, url.schema, url.host, url.port, url.path, url.query, url.fragment, url.userinfo)
+            self.url = HttpUrl(raw_url, url.schema, url.host, url.port, url.path, url.query, url.fragment, url.userinfo)
 
     def to_bytes(self) -> bytes:
         parts = [b'%b %b HTTP/%b' % (self.method, self.url.raw, self.version)]

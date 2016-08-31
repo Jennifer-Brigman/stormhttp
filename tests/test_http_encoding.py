@@ -3,7 +3,7 @@ import unittest
 
 class TestHttpEncodings(unittest.TestCase):
     def test_encoding_brotli(self):
-        from stormhttp import HttpResponse
+        from stormhttp.primitives import HttpResponse
         response = HttpResponse()
 
         original_body = b'abc' * 10
@@ -20,7 +20,7 @@ class TestHttpEncodings(unittest.TestCase):
         self.assertEqual(response.body, original_body)
 
     def test_encoding_deflate(self):
-        from stormhttp import HttpResponse
+        from stormhttp.primitives import HttpResponse
         response = HttpResponse()
 
         original_body = b'abc' * 10
@@ -37,7 +37,7 @@ class TestHttpEncodings(unittest.TestCase):
         self.assertEqual(response.body, original_body)
 
     def test_encoding_gzip(self):
-        from stormhttp import HttpResponse
+        from stormhttp.primitives import HttpResponse
         response = HttpResponse()
 
         original_body = b'abc' * 10
@@ -54,7 +54,7 @@ class TestHttpEncodings(unittest.TestCase):
         self.assertEqual(response.body, original_body)
 
     def test_encoding_reencode(self):
-        from stormhttp import HttpResponse
+        from stormhttp.primitives import HttpResponse
 
         response = HttpResponse()
 
@@ -71,7 +71,7 @@ class TestHttpEncodings(unittest.TestCase):
         self.assertEqual(response.body, b'KLJN\xc4\x8d\x00')
 
     def test_encoding_body_string(self):
-        from stormhttp import HttpResponse
+        from stormhttp.primitives import HttpResponse
 
         response = HttpResponse()
         response.body = b'KLJN\xc4\x8d\x00'
@@ -80,7 +80,7 @@ class TestHttpEncodings(unittest.TestCase):
         self.assertEqual(response.body_string(), "abc" * 10)
 
     def test_encoding_body_json(self):
-        from stormhttp import HttpResponse
+        from stormhttp.primitives import HttpResponse
 
         response = HttpResponse()
         response.body = b'{"a": [1, 2, 3]}'

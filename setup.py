@@ -21,7 +21,7 @@ setup(
         "stormhttp"
     ],
     version=__version__,
-    description="Lightning-fast HTTP primitives based on httptools",
+    description="Lightning-fast asynchronous web framework.",
     license="Apache 2",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
@@ -38,8 +38,9 @@ setup(
         "Topic :: Internet :: WWW/HTTP"
     ],
     install_requires=[
-        "httptools>=0.0.9",
-        "brotlipy>=0.5.1"
+        "brotlipy>=0.5.1",
+        "cchardet>=1.0.0",
+        "httptools>=0.0.9"
     ],
     tests_require=[
         "pytest",
