@@ -14,7 +14,7 @@
 
 from . import client, errors, primitives
 
-__version__ = "0.0.21"
+__version__ = "0.0.22"
 __all__ = [
     "client",
     "errors",

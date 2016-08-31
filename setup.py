@@ -21,7 +21,7 @@ setup(
         "stormhttp"
     ],
     version=__version__,
-    description="Lightning-fast asynchronous web framework.",
+    description="Lightning-fast asynchronous web framework for Python 3.5+",
     license="Apache 2",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
@@ -33,7 +33,6 @@ setup(
         "Intended Audience :: Developers",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Topic :: Internet :: WWW/HTTP"
     ],

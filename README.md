@@ -1,5 +1,5 @@
-# stormhttp
-Lightning-quick HTTP primitives built on [httptools](https://github.com/MagicStack/httptools) for Python 3.5+
+# Stormhttp
+Lightning-fast asynchronous web framework for Python 3.5+
 
 [![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
 [![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp)
