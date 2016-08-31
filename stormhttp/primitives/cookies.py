@@ -1,12 +1,43 @@
 import datetime
 import typing
+from .url import HttpUrl
 
 
 # Global Variables
 __all__ = [
+    "HttpCookie",
     "HttpCookies"
 ]
 _DEFAULT_COOKIE_META = (None, None, None, None, False, False)
+
+
+class HttpCookie:
+    def __init__(self, cookie: bytes, value: bytes, domain: typing.Optional[bytes]=None,
+                 path: typing.Optional[bytes]=None, expires: typing.Optional[datetime.datetime]=None,
+                 max_age: typing.Optional[int]=None, http_only: bool=False, secure: bool=False):
+        self.cookie = cookie
+        self.value = value
+        self.domain = domain
+        self.path = path
+        self.expires = expires
+        self.max_age = max_age
+        self.http_only = http_only
+        self.secure = secure
+
+    def is_expired(self) -> bool:
+        return self.expires is not None and datetime.datetime.utcnow() > self.expires
+
+    def is_allowed_for_url(self, url: HttpUrl) -> bool:
+
+        # First check to see if the cookie is for HTTPS only.
+        if self.secure and url.schema != b'https':
+            return False
+
+        # Check that this is either a domain or sub-domain.
+        if self.domain is not None and not url.host.endswith(self.domain):
+            return False
+
+        return True
 
 
 class HttpCookies(dict):
