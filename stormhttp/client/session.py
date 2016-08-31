@@ -92,8 +92,9 @@ class ClientSession:
         # Apply headers.
         for key, val in self.headers.items():
             request.headers[key] = val
-        for key, val in headers.items():
-            request.headers[key] = val
+        if headers is not None:
+            for key, val in headers.items():
+                request.headers[key] = val
 
         response = HttpResponse()
         response_error = False
