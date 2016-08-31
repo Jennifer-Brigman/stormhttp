@@ -10,6 +10,7 @@ from ..errors import SslCertificateVerificationError, SslError
 __all__ = [
     "ClientSession"
 ]
+_HTTPS_SCHEMA = b'https'
 _HTTP_REDIRECTS = {301, 302, 307, 308}
 _CERTIFICATE_VERIFY_FAILED = "CERTIFICATE_VERIFY_FAILED"
 
@@ -90,12 +91,14 @@ class ClientSession:
         """
         parsed_url = httptools.parse_url(url)
         host = parsed_url.host
-        schema = parsed_url.schema.lower()
-        port = parsed_url.port if parsed_url.port else (
-            443 if schema == b'https' else 80
-        )
-        if ssl is None and schema == b'https':
-            ssl = _ssl.create_default_context()
+
+        # If the connection is HTTPS default port is 443, otherwise 80.
+        if parsed_url.schema.lower() == _HTTPS_SCHEMA:
+            port = parsed_url.port if parsed_url.port else 443
+            if ssl is None:
+                ssl = _ssl.create_default_context()
+        else:
+            port = parsed_url.port if parsed_url.port else 80
 
         # Create the request.
         request = HttpRequest()
