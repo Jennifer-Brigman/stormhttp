@@ -22,7 +22,7 @@ class TestHttpCookies(unittest.TestCase):
         cookie.expires = datetime.datetime.utcnow() - datetime.timedelta(seconds=10)
         self.assertTrue(cookie.is_expired())
 
-    def test_cookies_allowed_for_url(self):
+    def test_cookies_allowed_for_url_domain(self):
         from stormhttp.primitives import HttpCookie
         cookie = HttpCookie(b'foo', b'bar', domain=b'.google.com', secure=True)
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
@@ -42,3 +42,11 @@ class TestHttpCookies(unittest.TestCase):
 
         # Almost incorrect domain name
         self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'https://www.ggoogle.com')))
+
+    def test_cookies_allowed_for_url_path(self):
+        from stormhttp.primitives import HttpCookie
+        cookie = HttpCookie(b'foo', b'bar', path=b'/foo')
+
+        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foo')))
+        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foobar')))
+        self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/bar')))

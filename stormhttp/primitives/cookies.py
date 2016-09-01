@@ -37,6 +37,10 @@ class HttpCookie:
         if self.domain is not None and not url.host.endswith(self.domain):
             return False
 
+        # Check this this is either a valid sub-path.
+        if self.path is not None and not url.path.startswith(self.path):
+            return False
+
         return True
 
 
