@@ -25,7 +25,7 @@ class HttpRequest(HttpMessage):
             self.url = HttpUrl(raw_url, url.schema, url.host, url.port, url.path, url.query, url.fragment, url.userinfo)
 
     def to_bytes(self) -> bytes:
-        parts = [_HTTP_REQUEST_FORMAT_STRING % (self.method, self.url.raw, self.version)]
+        parts = [_HTTP_REQUEST_FORMAT_STRING % (self.method, self.url.get(), self.version)]
         if len(self.headers) > 0:
             parts.append(self.headers.to_bytes())
         if len(self.cookies) > 0:
