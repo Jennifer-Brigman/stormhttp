@@ -18,3 +18,6 @@ class HttpUrl:
         self.query = {key: val for key, val in _QUERY_REGEX.findall(b'' if query is None else query)}
         self.fragment = fragment if fragment is not None else b''
         self.user_info = user_info if user_info is not None else b''
+
+    def __repr__(self):
+        return "<HttpUrl raw={}>".format(self.raw)

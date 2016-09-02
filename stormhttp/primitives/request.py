@@ -7,6 +7,7 @@ from .url import HttpUrl
 __all__ = [
     "HttpRequest"
 ]
+_HTTP_REQUEST_FORMAT_STRING = b'%b %b HTTP/%b'
 
 
 class HttpRequest(HttpMessage):
@@ -24,7 +25,7 @@ class HttpRequest(HttpMessage):
             self.url = HttpUrl(raw_url, url.schema, url.host, url.port, url.path, url.query, url.fragment, url.userinfo)
 
     def to_bytes(self) -> bytes:
-        parts = [b'%b %b HTTP/%b' % (self.method, self.url.raw, self.version)]
+        parts = [_HTTP_REQUEST_FORMAT_STRING % (self.method, self.url.raw, self.version)]
         if len(self.headers) > 0:
             parts.append(self.headers.to_bytes())
         if len(self.cookies) > 0:
@@ -32,3 +33,6 @@ class HttpRequest(HttpMessage):
         parts.append(b'')
         parts.append(self.body)
         return b'\r\n'.join(parts)
+
+    def __repr__(self):
+        return "<HttpRequest version={} method={} url={} headers={}>".format(self.version, self.method, self.url, self.headers)

@@ -3,6 +3,8 @@ import typing
 __all__ = [
     "HttpHeaders"
 ]
+_HTTP_HEADER_FORMAT_STRING = b'%b: %b'
+_HTTP_HEADER_SEPARATOR = b'\r\n'
 
 
 class HttpHeaders(dict):
@@ -24,7 +26,7 @@ class HttpHeaders(dict):
         return dict.__contains__(self, key.upper())
 
     def __repr__(self):
-        return dict.__repr__(self)
+        return "<HttpHeaders {}>".format(" ".join(["{}={}".format(key, val) for key, val in self.items()]))
 
     def get(self, key, default=None):
         return dict.get(self, key.upper(), default)
@@ -34,6 +36,6 @@ class HttpHeaders(dict):
             self[key] = val
 
     def to_bytes(self) -> bytes:
-        return b'\r\n'.join(
-            (b'\r\n'.join([b'%b: %b' % (key, val) for val in list_val])) for key, list_val in self.items()
-        )
+        return _HTTP_HEADER_SEPARATOR.join((
+            _HTTP_HEADER_SEPARATOR.join([_HTTP_HEADER_FORMAT_STRING % (key, val) for val in list_val])
+        ) for key, list_val in self.items())

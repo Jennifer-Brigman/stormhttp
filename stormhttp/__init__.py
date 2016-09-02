@@ -12,11 +12,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from . import client, errors, primitives
+from . import client, errors, primitives, server
 
 __version__ = "0.0.22"
 __all__ = [
     "client",
     "errors",
-    "primitives"
+    "primitives",
+    "server"
 ]

@@ -10,13 +10,21 @@ import zlib
 from .headers import HttpHeaders
 from .cookies import HttpCookies
 
-# Global Variables
 __all__ = [
     "HttpMessage"
 ]
 _COOKIE_REGEX = re.compile(b'([^\\s=;]+)(?:=([^=;]+))?(?:;|$)')
 _CHARSET_REGEX = re.compile(b'[^/]+/[^/]+;\s*charset=([^=;]+)')
 _SUPPORTED_ENCODINGS = {b'gzip', b'deflate', b'br', b'identity'}
+_ENCODING_GZIP = b'gzip'
+_ENCODING_DEFLATE = b'deflate'
+_ENCODING_BROTLI = b'br'
+_ENCODING_IDENTITY = b'identity'
+_HEADER_CONTENT_LENGTH = b'Content-Length'
+_HEADER_CONTENT_ENCODING = b'Content-Encoding'
+_HEADER_CONTENT_TYPE = b'Content-Type'
+_HEADER_COOKIE = b'Cookie'
+_HEADER_DEFAULT_CONTENT_ENCODING = [_ENCODING_IDENTITY]
 
 
 class HttpMessage:
@@ -52,35 +60,35 @@ class HttpMessage:
         :return: None
         """
         assert encoding in _SUPPORTED_ENCODINGS
-        current_encoding = self.headers.get(b'Content-Encoding', [b'identity'])[0]
+        current_encoding = self.headers.get(_HEADER_CONTENT_ENCODING, _HEADER_DEFAULT_CONTENT_ENCODING)[0]
         if current_encoding == encoding or len(self.body) == 0:
             return  # No-op if the encoding is already correct.
 
         # Decoding the current encoding.
-        if current_encoding != b'identity':
-            if current_encoding == b'br':
+        if current_encoding != _ENCODING_IDENTITY:
+            if current_encoding == _ENCODING_BROTLI:
                 self.body = brotli.decompress(self.body)
-            elif current_encoding == b'gzip':
+            elif current_encoding == _ENCODING_GZIP:
                 self.body = gzip.GzipFile(fileobj=io.BytesIO(self.body), mode="rb").read()
-            elif current_encoding == b'deflate':
+            elif current_encoding == _ENCODING_DEFLATE:
                 self.body = zlib.decompress(self.body, -zlib.MAX_WBITS)
 
         # Re-encoding with the desired encoding.
-        if encoding != b'identity':
-            if encoding == b'br':
+        if encoding != _ENCODING_IDENTITY:
+            if encoding == _ENCODING_BROTLI:
                 self.body = brotli.compress(self.body)
-            elif encoding == b'gzip':
+            elif encoding == _ENCODING_GZIP:
                 out = io.BytesIO()
                 gzip.GzipFile(fileobj=out, mode="wb").write(self.body)
                 self.body = out.getvalue()
-            elif encoding == b'deflate':
+            elif encoding == _ENCODING_DEFLATE:
                 deflate = zlib.compressobj(9, zlib.DEFLATED, -zlib.MAX_WBITS)
                 self.body = deflate.compress(self.body) + deflate.flush()
 
         # Optionally set the headers.
         if set_headers:
-            self.headers[b'Content-Length'] = b'%d' % len(self.body)
-            self.headers[b'Content-Encoding'] = encoding
+            self.headers[_HEADER_CONTENT_LENGTH] = b'%d' % len(self.body)
+            self.headers[_HEADER_CONTENT_ENCODING] = encoding
 
     def body_string(self) -> str:
         """
@@ -91,13 +99,13 @@ class HttpMessage:
         :return: Body decoded as a string.
         """
         # If the body is encoded or compressed, need to decompress it before getting the string.
-        encoding = self.headers.get(b'Content-Encoding', [b'identity'])[0]
-        if encoding != b'identity':
-            self.set_encoding(b'identity', set_headers=False)
+        encoding = self.headers.get(_HEADER_CONTENT_ENCODING, _HEADER_DEFAULT_CONTENT_ENCODING)[0]
+        if encoding != _ENCODING_IDENTITY:
+            self.set_encoding(_ENCODING_IDENTITY, set_headers=False)
         body = None
 
         # If the headers are giving us a hint, then try them first.
-        charset = _CHARSET_REGEX.match(self.headers.get(b'Content-Type', [b''])[0])
+        charset = _CHARSET_REGEX.match(self.headers.get(_HEADER_CONTENT_TYPE, [b''])[0])
         if charset is not None:
             charset = charset.group(1).decode("utf-8")
             try:
@@ -113,7 +121,7 @@ class HttpMessage:
                 body = self.body.decode(cchardet.detect(self.body)["encoding"])
 
         # Revert back to the old encoding.
-        if encoding != b'identity':
+        if encoding != _ENCODING_IDENTITY:
             self.set_encoding(encoding, set_headers=False)
 
         return body
@@ -156,9 +164,9 @@ class HttpMessage:
             _headers[_key] = _headers.get(_key, []) + [b''.join(_val_buffer)]
 
         self.headers.update(_headers)
-        if b'Cookie' in self.headers:
-            self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(b'; '.join(self.headers[b'Cookie']))})
-            del self.headers[b'Cookie']
+        if _HEADER_COOKIE in self.headers:
+            self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(b'; '.join(self.headers[_HEADER_COOKIE]))})
+            del self.headers[_HEADER_COOKIE]
 
         self._is_header_complete = True
 
