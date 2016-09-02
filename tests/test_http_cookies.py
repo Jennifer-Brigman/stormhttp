@@ -24,15 +24,17 @@ class TestHttpCookies(unittest.TestCase):
 
     def test_cookies_allowed_for_url_domain(self):
         from stormhttp.primitives import HttpCookie
-        cookie = HttpCookie(b'foo', b'bar', domain=b'.google.com', secure=True)
+        cookie = HttpCookie(b'foo', b'bar', domain=b'www.google.com', secure=True)
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
-        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://maps.google.com')))
 
         # Path shouldn't matter here.
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/test')))
 
         # Neither should queries.
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com?foo=bar')))
+
+        # Parents don't get sub-domain cookies.
+        self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'https://google.com')))
 
         # Secure cookie but sent over HTTP.
         self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))

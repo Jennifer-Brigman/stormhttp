@@ -34,8 +34,14 @@ class HttpCookie:
             return False
 
         # Check that this is either a domain or sub-domain.
-        if self.domain is not None and not url.host.endswith(self.domain):
-            return False
+        if self.domain is not None:
+            url_domains = url.host.split(b'.')
+            cookie_domains = self.domain.split(b'.')
+            if len(cookie_domains) > len(url_domains):
+                return False
+            for i in range(-1, -len(cookie_domains)-1, -1):
+                if url_domains[i] != cookie_domains[i]:
+                    return False
 
         # Check this this is either a valid sub-path.
         if self.path is not None and not url.path.startswith(self.path):
