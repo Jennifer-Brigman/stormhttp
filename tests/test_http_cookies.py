@@ -52,3 +52,50 @@ class TestHttpCookies(unittest.TestCase):
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foo')))
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foobar')))
         self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/bar')))
+
+    def test_cookies_insecure(self):
+        from stormhttp.primitives import HttpCookie
+        cookie = HttpCookie(b'foo', b'bar', domain=b'www.google.com')
+
+        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))
+        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
+
+    def test_cookies_dot_prefix(self):
+        from stormhttp.primitives import HttpCookie
+        cookie = HttpCookie(b'foo', b'bar', domain=b'.google.com')
+
+        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))
+        self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://google.com')))
+
+    def test_cookies_expire_times(self):
+        from stormhttp.primitives import HttpCookie
+        import datetime
+        import time
+        cookie = HttpCookie(b'foo', b'bar')
+
+        # This cookie is shown never to expire.
+        self.assertFalse(cookie.is_expired())
+        self.assertIsNone(cookie.expiration_datetime())
+
+        # This cookie will expire eventually.
+        now = datetime.datetime.utcnow()
+        future = now + datetime.timedelta(seconds=1)
+        cookie = HttpCookie(b'foo', b'bar', expires=future)
+        self.assertFalse(cookie.is_expired())
+        self.assertEqual(cookie.expiration_datetime(), future)
+
+        # Sleep, allow the cookie to expire naturally.
+        time.sleep(1)
+
+        # Check that the cookie is expired.
+        self.assertTrue(cookie.is_expired())
+
+        # This cookie will expire in two seconds.
+        cookie = HttpCookie(b'foo', b'bar', max_age=1)
+        self.assertFalse(cookie.is_expired())
+
+        # Sleep, allow the cookie to expire naturally.
+        time.sleep(1)
+
+        # Check that the cookie is expired.
+        self.assertTrue(cookie.is_expired())
