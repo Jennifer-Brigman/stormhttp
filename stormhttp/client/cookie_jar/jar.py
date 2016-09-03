@@ -23,12 +23,15 @@ class CookieJar(AbstractCookieJar):
         cookie_key = (cookie.name, cookie.domain, cookie.path)
         return cookie_key in self._cookies and self._cookies[cookie_key] == cookie
 
+    def __iter__(self):
+        return iter(self._cookies)
+
     def load_all_cookies(self):
         self._cookies = {}
         self.update_cookies(self.storage.load_all_cookies())
 
     def save_all_cookies(self):
-        self.storage.save_all_cookies([cookie for cookie in self._cookies.values()])
+        self.storage.save_all_cookies(list(self._cookies.values()))
 
     def get_cookies_for_url(self, url: HttpUrl) -> typing.List[HttpCookie]:
         cookies = []

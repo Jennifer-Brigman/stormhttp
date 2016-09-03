@@ -27,7 +27,6 @@ class ServerHttpProtocol(asyncio.Protocol):
         self._parser.feed_data(data)
 
         if self._request.is_complete():
-            print(self._request)
             self._request = None
 
 

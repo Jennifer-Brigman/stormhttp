@@ -18,7 +18,12 @@ class PyTest(test):
 setup(
     name="stormhttp",
     packages=[
-        "stormhttp"
+        "stormhttp",
+        "stormhttp/client",
+        "stormhttp/client/cookie_jar",
+        "stormhttp/primitives",
+        "stormhttp/server",
+        "stormhttp/server/session"
     ],
     version=__version__,
     description="Lightning-fast asynchronous web framework for Python 3.5+",
@@ -27,7 +32,7 @@ setup(
     author_email="sethmichaellarson@protonmail.com",
     url="https://github.com/SethMichaelLarson/stormhttp",
     download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + __version__,
-    keywords=["web"],
+    keywords=["web", "async", "framework"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Intended Audience :: Developers",

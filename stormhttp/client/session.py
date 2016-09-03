@@ -4,6 +4,7 @@ import httptools
 import socket
 import ssl as _ssl
 import typing
+from .cookie_jar import CookieJar, AbstractCookieJar
 from ..primitives import HttpRequest, HttpResponse, HttpParser, HttpHeaders
 from ..errors import SslCertificateVerificationError, SslError
 
@@ -18,7 +19,7 @@ _CERTIFICATE_VERIFY_FAILED = "CERTIFICATE_VERIFY_FAILED"
 class ClientSession:
     def __init__(self, loop: asyncio.AbstractEventLoop=None,
                  headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
-                 version: bytes=b'1.1'):
+                 version: bytes=b'1.1', cookie_jar: AbstractCookieJar=None):
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._lock = asyncio.Lock(loop=self._loop)
         self._reader = None  # type: asyncio.StreamReader
@@ -27,6 +28,7 @@ class ClientSession:
         self._host = None
         self._port = None
         self._parser = HttpParser()
+        self.cookie_jar = cookie_jar if cookie_jar is not None else CookieJar()
         self.headers = HttpHeaders()
         if headers is not None:
             self.headers.update(self.headers)
@@ -114,6 +116,10 @@ class ClientSession:
         if headers is not None:
             for key, val in headers.items():
                 request.headers[key] = val
+
+        # Add HttpCookies from the CookieJar
+        for cookie in self.cookie_jar.get_cookies_for_url(request.url):
+            request.cookies
 
         response = HttpResponse()
         response_error = False
