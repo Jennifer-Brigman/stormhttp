@@ -1,5 +1,6 @@
 import brotli
 import cchardet
+import datetime
 import gzip
 import json
 import io
@@ -8,13 +9,14 @@ import sys
 import typing
 import zlib
 from .headers import HttpHeaders
-from .cookies import HttpCookies, HttpCookie
+from .cookies import HttpCookies, HttpCookie, _COOKIE_EXPIRE_FORMAT
 
 __all__ = [
     "HttpMessage"
 ]
-_COOKIE_REGEX = re.compile(b'([^\\s=;]+)(?:=([^=;]+))?(?:;|$)')
+_COOKIE_REGEX = re.compile(b'([^\\s=;]+)(?:=([^;]+))?(?:;|$)')
 _CHARSET_REGEX = re.compile(b'[^/]+/[^/]+;\s*charset=([^=;]+)')
+_COOKIE_META = {b'domain', b'path', b'expires', b'maxage', b'httponly', b'secure'}
 _SUPPORTED_ENCODINGS = {b'gzip', b'deflate', b'br', b'identity'}
 _ENCODING_GZIP = b'gzip'
 _ENCODING_DEFLATE = b'deflate'
@@ -24,6 +26,7 @@ _HEADER_CONTENT_LENGTH = b'Content-Length'
 _HEADER_CONTENT_ENCODING = b'Content-Encoding'
 _HEADER_CONTENT_TYPE = b'Content-Type'
 _HEADER_COOKIE = b'Cookie'
+_HEADER_SET_COOKIE = b'Set-Cookie'
 _HEADER_DEFAULT_CONTENT_ENCODING = [_ENCODING_IDENTITY]
 
 
@@ -171,6 +174,37 @@ class HttpMessage:
                     cookie.values[key] = value
                 self.cookies.add(cookie)
             del self.headers[_HEADER_COOKIE]
+
+        if _HEADER_SET_COOKIE in self.headers:
+            for cookie_header in self.headers[_HEADER_SET_COOKIE]:
+                cookie = HttpCookie()
+                for key, value in _COOKIE_REGEX.findall(cookie_header):
+                    key_lower = key.lower()
+                    if key_lower in _COOKIE_META:
+                        if key_lower == b'secure':
+                            cookie.secure = True
+                        elif key_lower == b'httponly':
+                            cookie.http_only = True
+                        elif key_lower == b'domain':
+                            cookie.domain = value
+                        elif key_lower == b'path':
+                            cookie.path = value
+                        elif key_lower == b'expires':
+                            try:
+                                cookie.expires = datetime.datetime.strptime(value.decode("utf-8"), _COOKIE_EXPIRE_FORMAT)
+                            except ValueError:
+                                pass
+                        elif key_lower == b'maxage':
+                            try:
+                                cookie.max_age = int(value.decode("utf-8"))
+                            except ValueError:
+                                pass
+                            except UnicodeDecodeError:
+                                pass
+                    else:
+                        cookie.values[key] = value
+                self.cookies.add(cookie)
+            del self.headers[_HEADER_SET_COOKIE]
 
         self._is_header_complete = True
 

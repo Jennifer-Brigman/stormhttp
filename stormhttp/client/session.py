@@ -129,9 +129,8 @@ class ClientSession:
             for key, val in headers.items():
                 request.headers[key] = val
 
-        # Add HttpCookies from the CookieJar
-        for cookie in self.cookie_jar.get_cookies_for_url(request.url):
-            request.cookies.add(cookie)
+        # Create an HttpCookies object from the CookieJar.
+        request.cookies = self.cookie_jar.get_cookies_for_url(request.url)
 
         response = HttpResponse()
         response_error = False
@@ -161,7 +160,7 @@ class ClientSession:
                     method, headers=headers, body=body, allow_redirects=True, max_redirects=max_redirects-1
                 )
 
-        # If we're errored or the response isn't complete, return a 500.
+        # If we're erroring or the response isn't complete, return a 500.
         if response_error or not response.is_complete():
             response.version = self._version
             response.body = b''
@@ -187,3 +186,27 @@ class ClientSession:
         See documentation of ClientSession.request(). Uses similar function signature without 'method'.
         """
         return await self.request(url, b'POST', headers, body, allow_redirects, max_redirects, buffer_length, ssl)
+
+    async def options(self, url: bytes, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
+                   body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
+                   buffer_length: int=65536, ssl: _ssl.SSLContext=None) -> HttpResponse:
+        """
+        See documentation of ClientSession.request(). Uses similar function signature without 'method'.
+        """
+        return await self.request(url, b'OPTIONS', headers, body, allow_redirects, max_redirects, buffer_length, ssl)
+
+    async def head(self, url: bytes, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
+                      body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
+                      buffer_length: int=65536, ssl: _ssl.SSLContext = None) -> HttpResponse:
+        """
+        See documentation of ClientSession.request(). Uses similar function signature without 'method'.
+        """
+        return await self.request(url, b'HEAD', headers, body, allow_redirects, max_redirects, buffer_length, ssl)
+
+    async def patch(self, url: bytes, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
+                   body: bytes=b'', allow_redirects: bool=True, max_redirects: int=10,
+                   buffer_length: int=65536, ssl: _ssl.SSLContext=None) -> HttpResponse:
+        """
+        See documentation of ClientSession.request(). Uses similar function signature without 'method'.
+        """
+        return await self.request(url, b'PATCH', headers, body, allow_redirects, max_redirects, buffer_length, ssl)
