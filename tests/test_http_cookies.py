@@ -24,7 +24,7 @@ class TestHttpCookies(unittest.TestCase):
 
     def test_cookies_allowed_for_url_domain(self):
         from stormhttp.primitives import HttpCookie
-        cookie = HttpCookie(b'foo', b'bar', domain=b'www.google.com', secure=True)
+        cookie = HttpCookie(domain=b'www.google.com', secure=True)
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
 
         # Path shouldn't matter here.
@@ -47,7 +47,7 @@ class TestHttpCookies(unittest.TestCase):
 
     def test_cookies_allowed_for_url_path(self):
         from stormhttp.primitives import HttpCookie
-        cookie = HttpCookie(b'foo', b'bar', path=b'/foo')
+        cookie = HttpCookie(path=b'/foo')
 
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foo')))
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foobar')))
@@ -55,14 +55,14 @@ class TestHttpCookies(unittest.TestCase):
 
     def test_cookies_insecure(self):
         from stormhttp.primitives import HttpCookie
-        cookie = HttpCookie(b'foo', b'bar', domain=b'www.google.com')
+        cookie = HttpCookie(domain=b'www.google.com')
 
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
 
     def test_cookies_dot_prefix(self):
         from stormhttp.primitives import HttpCookie
-        cookie = HttpCookie(b'foo', b'bar', domain=b'.google.com')
+        cookie = HttpCookie(domain=b'.google.com')
 
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://google.com')))
@@ -71,7 +71,7 @@ class TestHttpCookies(unittest.TestCase):
         from stormhttp.primitives import HttpCookie
         import datetime
         import time
-        cookie = HttpCookie(b'foo', b'bar')
+        cookie = HttpCookie()
 
         # This cookie is shown never to expire.
         self.assertFalse(cookie.is_expired())
@@ -80,7 +80,7 @@ class TestHttpCookies(unittest.TestCase):
         # This cookie will expire eventually.
         now = datetime.datetime.utcnow()
         future = now + datetime.timedelta(seconds=1)
-        cookie = HttpCookie(b'foo', b'bar', expires=future)
+        cookie = HttpCookie(expires=future)
         self.assertFalse(cookie.is_expired())
         self.assertEqual(cookie.expiration_datetime(), future)
 
@@ -91,7 +91,7 @@ class TestHttpCookies(unittest.TestCase):
         self.assertTrue(cookie.is_expired())
 
         # This cookie will expire in two seconds.
-        cookie = HttpCookie(b'foo', b'bar', max_age=1)
+        cookie = HttpCookie(max_age=1)
         self.assertFalse(cookie.is_expired())
 
         # Sleep, allow the cookie to expire naturally.

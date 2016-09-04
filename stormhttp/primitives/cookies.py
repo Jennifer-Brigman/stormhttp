@@ -8,16 +8,15 @@ __all__ = [
     "HttpCookie",
     "HttpCookies"
 ]
-_DEFAULT_COOKIE_META = (None, None, None, None, False, False)
 _EPOCH = datetime.datetime.fromtimestamp(0)
+_COOKIE_EXPIRE_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 
 
 class HttpCookie:
-    def __init__(self, name: bytes, value: bytes, domain: typing.Optional[bytes]=None,
-                 path: typing.Optional[bytes]=None, expires: typing.Optional[datetime.datetime]=None,
-                 max_age: typing.Optional[int]=None, http_only: bool=False, secure: bool=False):
-        self.name = name
-        self.value = value
+    def __init__(self, domain: typing.Optional[bytes]=None, path: typing.Optional[bytes]=None,
+                 expires: typing.Optional[datetime.datetime]=None, max_age: typing.Optional[int]=None,
+                 http_only: bool=False, secure: bool=False):
+        self.values = {}  # type: typing.Dict[bytes, bytes]
         self.domain = domain
         self.path = path
         self.expires = expires
@@ -27,9 +26,7 @@ class HttpCookie:
         self._max_age_set = datetime.datetime.utcnow()
 
     def __eq__(self, other) -> bool:
-        return isinstance(other, HttpCookie) and self.name == other.cookie and self.value == other.value and \
-               self.domain == other.domain and self.path == other.path and self.expires == other.expires and \
-               self.http_only == other.http_only and self.secure == other.secure
+        return isinstance(other, HttpCookie) and self.domain == other.domain and self.path == other.path
 
     @property
     def max_age(self) -> typing.Optional[int]:
@@ -42,12 +39,13 @@ class HttpCookie:
 
     def expire(self) -> None:
         """
-        Expires the cookie and removes it's value.
+        Expires the cookie and removes all the values.
         :return: None
         """
         self.expires = _EPOCH
         self.max_age = 0
-        self.value = b''
+        for key in self.values.keys():
+            self.values[key] = b''
 
     def expiration_datetime(self) -> typing.Optional[datetime.datetime]:
         """
@@ -97,31 +95,47 @@ class HttpCookie:
 
 
 class HttpCookies(dict):
-    def __init__(self, *args, **kwargs):
-        self._meta = {}
-        self._changed = {}
+    def __setitem__(self, key: typing.Tuple[bytes, bytes], value: HttpCookie) -> None:
+        dict.__setitem__(self, key, value)
+
+    def __getitem__(self, key: typing.Tuple[bytes, bytes]) -> HttpCookie:
+        return dict.__getitem__(self, key)
+
+    def add(self, cookie: HttpCookie):
+        self[(cookie.domain, cookie.path)] = cookie
+
+    def remove(self, cookie: HttpCookie):
+        cookie_key = (cookie.domain, cookie.path)
+        if cookie_key in self:
+            dict.__delitem__(self, cookie_key)
 
     def to_bytes(self, set_cookie: bool=False) -> bytes:
         if set_cookie:
-            cookies = []
-            for cookie, changed in self._changed.items():
-                if not changed:
-                    continue
-                cookie_crumbs = [b'SET-COOKIE:', b'%b=%b;' % (cookie, self.get(cookie))]
-                domain, path, expires, max_age, http_only, secure = self._meta.get(cookie, _DEFAULT_COOKIE_META)
-                if http_only:
+            all_cookie_crumbs = []
+            for cookie in self.values():
+                cookie_crumbs = [b'SET-COOKIE:']
+                for key, value in cookie.values.items():
+                    cookie_crumbs.append(b'%b=%b;' % (key, value))
+
+                if cookie.domain is not None:
+                    cookie_crumbs.append(b'Domain=%b;' % cookie.domain)
+                if cookie.path is not None:
+                    cookie_crumbs.append(b'Path=%b;' % cookie.path)
+                if cookie.expires is not None:
+                    cookie_crumbs.append(b'Expires=%b;' % cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("ascii"))
+                if cookie.max_age is not None:
+                    cookie_crumbs.append(b'MaxAge=%d;' % cookie.max_age)
+                if cookie.http_only:
                     cookie_crumbs.append(b'HttpOnly;')
-                if secure:
+                if cookie.secure:
                     cookie_crumbs.append(b'Secure;')
-                if domain is not None:
-                    cookie_crumbs.append(b'Domain=%b;' % domain)
-                if path is not None:
-                    cookie_crumbs.append(b'Path=%b;' % path)
-                if expires is not None:
-                    cookie_crumbs.append(b'Expires=%b;' % expires.strftime("%a, %d %b %Y %H:%M:%S GMT").encode("ascii"))
-                if max_age is not None:
-                    cookie_crumbs.append(b'MaxAge=%d;' % max_age)
-                cookies.append(b' '.join(cookie_crumbs))
-            return b'\r\n'.join(cookies)
+
+                all_cookie_crumbs.append(b' '.join(cookie_crumbs))
+            return b'\r\n'.join(all_cookie_crumbs)
         else:
-            return b'COOKIE: ' + b'; '.join(b'%b=%b' % (key, val) for key, val in self.items()) + b';'
+            all_values = {}
+            for cookie in self.values():
+                for key, value in cookie.values.items():
+                    if key not in all_values:
+                        all_values[key] = value
+            return b'COOKIE: %b;' % b'; '.join([b'%b=%b' % (key, all_values[key]) for key in all_values])

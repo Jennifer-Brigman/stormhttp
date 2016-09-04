@@ -25,7 +25,7 @@ class HttpResponse(HttpMessage):
         parts = [_HTTP_RESPONSE_FORMAT_STRING % (self.version, self.status_code, self.status)]
         if len(self.headers) > 0:
             parts.append(self.headers.to_bytes())
-        if len(self.cookies) > 0 and self.cookies.is_changed():
+        if len(self.cookies):
             parts.append(self.cookies.to_bytes(set_cookie=True))
         parts.append(b'')
         parts.append(self.body)

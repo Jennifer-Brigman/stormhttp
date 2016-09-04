@@ -24,22 +24,18 @@ class TestHttpRequest(unittest.TestCase):
     def test_parse_cookie_first(self):
         from stormhttp.primitives import HttpRequest, HttpParser
 
-        data = b'GET / HTTP/1.1\r\nAccept: text/html\r\nCookie: a=1;\r\n\r\n'
+        data = b'GET / HTTP/1.1\r\nCookie: a=1;\r\n\r\n'
         request = HttpRequest()
         parser = HttpParser(request)
         parser.feed_data(data)
-        self.assertTrue(b'a' in request.cookies)
-        self.assertEqual(request.cookies.get(b'a', None), b'1')
-
-        self.assertIn(request.to_bytes(), [
-            b'GET / HTTP/1.1\r\nACCEPT: text/html\r\nCOOKIE: a=1;\r\n\r\n',
-            b'GET / HTTP/1.1\r\nCOOKIE: a=1;\r\nACCEPT: text/html\r\n\r\n'
-        ])
+        self.assertEqual(len(request.cookies), 1)
+        self.assertEqual(list(request.cookies.values())[0].values[b'a'], b'1')
+        self.assertEqual(request.to_bytes(), b'GET / HTTP/1.1\r\nCOOKIE: a=1;\r\n\r\n')
 
     def test_http_parser(self):
         from stormhttp.primitives import HttpRequest, HttpParser
 
-        data = b'GET / HTTP/1.1\r\nACCEPT: text/html\r\nACCEPT-ENCODING: utf-8\r\nCOOKIE: a=1;\r\n\r\n'
+        data = b'GET / HTTP/1.1\r\nACCEPT: text/html\r\nACCEPT-ENCODING: utf-8\r\n\r\n'
         for block_size in range(1, len(data)+1):
             index = 0
             request = HttpRequest()
@@ -59,7 +55,6 @@ class TestHttpRequest(unittest.TestCase):
             self.assertEqual(request.url.raw, b'/')
             self.assertEqual(request.headers.get(b'Accept', None), [b'text/html'])
             self.assertEqual(request.headers.get(b'Accept-Encoding', None), [b'utf-8'])
-            self.assertEqual(request.cookies.get(b'a', None), b'1')
 
     def test_http_multiple_headers(self):
         from stormhttp.primitives import HttpRequest, HttpParser

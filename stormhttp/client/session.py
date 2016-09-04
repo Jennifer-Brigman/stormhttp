@@ -40,6 +40,13 @@ class ClientSession:
         self._reader = None
 
     async def open(self, address: typing.Tuple[bytes, int], ssl: typing.Optional[_ssl.SSLContext]=None) -> None:
+        """
+        Opens a connection to the address and verifies the SSL/TLS certificate if specified.
+
+        :param address: Tuple of host and port to connect to.
+        :param ssl: Optional SSLContext, if not given and using HTTPS will use the system default SSLContext.
+        :return: None
+        """
         host, port = address
         if self._reader is None or self._host != host or self._port != port:
             async with self._lock:
@@ -66,6 +73,10 @@ class ClientSession:
                 self._port = port
 
     async def close(self) -> None:
+        """
+        Closes a connection if one is open.
+        :return: None
+        """
         async with self._lock:
             if self._reader is not None:
                 self._writer.close()
@@ -81,6 +92,7 @@ class ClientSession:
         cookies (if applicable for that domain) as well as all values passed in to the
         function. Uses the system default for SSL/TLS on HTTPS unless given a different
         SSLContext. Follow redirects by default but the behaviour can be overridden.
+
         :param url: URL to send the request to.
         :param method: HTTP method to use.
         :param headers: Headers to apply to the request.
@@ -119,7 +131,7 @@ class ClientSession:
 
         # Add HttpCookies from the CookieJar
         for cookie in self.cookie_jar.get_cookies_for_url(request.url):
-            request.cookies
+            request.cookies.add(cookie)
 
         response = HttpResponse()
         response_error = False

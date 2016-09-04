@@ -8,7 +8,7 @@ import sys
 import typing
 import zlib
 from .headers import HttpHeaders
-from .cookies import HttpCookies
+from .cookies import HttpCookies, HttpCookie
 
 __all__ = [
     "HttpMessage"
@@ -165,7 +165,11 @@ class HttpMessage:
 
         self.headers.update(_headers)
         if _HEADER_COOKIE in self.headers:
-            self.cookies.update({key: val for key, val in _COOKIE_REGEX.findall(b'; '.join(self.headers[_HEADER_COOKIE]))})
+            for cookie_header in self.headers[_HEADER_COOKIE]:
+                cookie = HttpCookie()
+                for key, value in _COOKIE_REGEX.findall(cookie_header):
+                    cookie.values[key] = value
+                self.cookies.add(cookie)
             del self.headers[_HEADER_COOKIE]
 
         self._is_header_complete = True
