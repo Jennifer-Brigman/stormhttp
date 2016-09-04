@@ -1,5 +1,7 @@
 # Stormhttp
-Lightning-fast asynchronous web framework for Python 3.5+
+Lightning-fast asynchronous web framework for Python 3.5+. Built to be a speedy lower-level replacement for aiohttp.
+Stormhttp is encoding-agnostic as all work is done on raw bytes rather than strings.
+We leave all those issues up to the application which allows both greater control and speed.
 
 [![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
 [![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp)
