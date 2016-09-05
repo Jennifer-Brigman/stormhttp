@@ -14,33 +14,35 @@ class CookieJar(AbstractCookieJar):
             storage = TemporaryCookieJarStorage()
         AbstractCookieJar.__init__(self, storage)
         # Dictionary key tuple should be Name, Domain, Path
-        self._cookies = {}  # type: typing.Dict[typing.Tuple[bytes, bytes], HttpCookie]
+        self.cookies = {}  # type: typing.Dict[typing.Tuple[bytes, bytes], HttpCookie]
 
     def __len__(self) -> int:
-        return len(self._cookies)
+        return len(self.cookies)
 
     def __contains__(self, cookie: HttpCookie) -> bool:
         cookie_key = (cookie.domain, cookie.path)
-        return cookie_key in self._cookies
+        return cookie_key in self.cookies
 
     def __iter__(self):
-        return iter(self._cookies)
+        return iter(self.cookies)
 
     def load_all_cookies(self):
-        self._cookies = {}
-        self.update_cookies(self.storage.load_all_cookies())
+        self.cookies = {}
+        for cookie in self.storage.load_all_cookies():
+            self.cookies[(cookie.domain, cookie.path)] = cookie
 
     def save_all_cookies(self):
-        self.storage.save_all_cookies(list(self._cookies.values()))
+        self.storage.save_all_cookies(list(self.cookies.values()))
 
     def get_cookies_for_url(self, url: HttpUrl) -> HttpCookies:
         cookies = HttpCookies()
-        for cookie in self._cookies.values():
+        for cookie in self.cookies.values():
             if cookie.is_allowed_for_url(url):
                 cookies.add(cookie)
         return cookies
 
-    def update_cookies(self, cookies: HttpCookies):
+    def update_cookies(self, url: HttpUrl, cookies: HttpCookies):
         for cookie in cookies:
-            cookie_key = (cookie.domain, cookie.path)
-            self._cookies[cookie_key] = cookie
+            if cookie.is_allowed_for_url(url):
+                cookie_key = (cookie.domain, cookie.path)
+                self.cookies[cookie_key] = cookie

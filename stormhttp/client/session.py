@@ -14,6 +14,11 @@ __all__ = [
 _HTTPS_SCHEMA = b'https'
 _HTTP_REDIRECTS = {301, 302, 307, 308}
 _CERTIFICATE_VERIFY_FAILED = "CERTIFICATE_VERIFY_FAILED"
+_HEADER_LOCATION = b'Location'
+_HEADER_CONNECTION = b'Connection'
+_HEADER_CONNECTION_CLOSE = b'close'
+_HEADER_URI = b'URI'
+_HEADER_HOST = b'Host'
 
 
 class ClientSession:
@@ -64,7 +69,7 @@ class ClientSession:
 
                 except _ssl.SSLError as error:
                     if _CERTIFICATE_VERIFY_FAILED in str(error):
-                        raise SslCertificateVerificationError("Error occurred while verifying the ceritificate.")
+                        raise SslCertificateVerificationError("Error occurred while verifying the certificate.")
                     else:
                         raise SslError(str(error))
                 except _ssl.CertificateError:
@@ -119,7 +124,7 @@ class ClientSession:
         request.method = method
         request.version = self._version
         request.body = body
-        request.headers[b'Host'] = host
+        request.headers[_HEADER_HOST] = host
         request.on_url(url)
 
         # Apply headers.
@@ -131,6 +136,8 @@ class ClientSession:
 
         # Create an HttpCookies object from the CookieJar.
         request.cookies = self.cookie_jar.get_cookies_for_url(request.url)
+
+        print(request.to_bytes())
 
         response = HttpResponse()
         response_error = False
@@ -147,16 +154,20 @@ class ClientSession:
                         break
 
         # Socket is unlocked at this point.
-        if response.headers.get(b'Connection', b'') == b'close':
+        if response.headers.get(_HEADER_CONNECTION, b'') == _HEADER_CONNECTION_CLOSE:
             await self.close()
+
+        # If there's cookies to be added to the CookieJar, do so here.
+        if len(response.cookies) > 0:
+            self.cookie_jar.update_cookies(request.url, response.cookies.values())
 
         # If there are redirects and we're allowed to follow, then follow them.
         if allow_redirects and response.status_code in _HTTP_REDIRECTS:
-            if max_redirects <= 0 or b'Location' not in response.headers:
+            if max_redirects <= 0 or _HEADER_LOCATION not in response.headers:
                 response_error = True
             else:
                 response = await self.request(
-                    (response.headers.get(b'Location') or response.headers.get(b'URI'))[0],
+                    (response.headers.get(_HEADER_LOCATION) or response.headers.get(_HEADER_URI))[0],
                     method, headers=headers, body=body, allow_redirects=True, max_redirects=max_redirects-1
                 )
 

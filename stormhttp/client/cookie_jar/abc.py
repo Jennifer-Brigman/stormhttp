@@ -1,6 +1,6 @@
 import abc
 import typing
-from ...primitives import HttpCookie, HttpUrl
+from ...primitives import HttpCookie, HttpCookies, HttpUrl
 
 __all__ = [
     "AbstractCookieJarStorage",
@@ -31,9 +31,9 @@ class AbstractCookieJar(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_cookies_for_url(self, url: HttpUrl) -> typing.List[HttpCookie]:
+    def get_cookies_for_url(self, url: HttpUrl) -> HttpCookies:
         pass
 
     @abc.abstractmethod
-    def update_cookies(self, cookies: typing.List[HttpCookie]):
+    def update_cookies(self, url: HttpUrl, cookies: HttpCookies):
         pass

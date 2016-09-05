@@ -93,6 +93,9 @@ class HttpCookie:
 
         return True
 
+    def __repr__(self):
+        return "<HttpCookie values={} domain={} path={}>".format(self.values, self.domain, self.path)
+
 
 class HttpCookies(dict):
     def __setitem__(self, key: typing.Tuple[bytes, bytes], value: HttpCookie) -> None:
