@@ -137,8 +137,6 @@ class ClientSession:
         # Create an HttpCookies object from the CookieJar.
         request.cookies = self.cookie_jar.get_cookies_for_url(request.url)
 
-        print(request.to_bytes())
-
         response = HttpResponse()
         response_error = False
         self._parser.set_target(response)
