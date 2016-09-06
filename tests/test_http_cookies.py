@@ -2,7 +2,7 @@ import unittest
 
 
 def _make_http_url(url: bytes):
-    from stormhttp.primitives import HttpUrl
+    from stormhttp import HttpUrl
     import httptools
     parsed_url = httptools.parse_url(url)
     print(parsed_url.host)
@@ -13,7 +13,7 @@ def _make_http_url(url: bytes):
 class TestHttpCookies(unittest.TestCase):
     def test_cookies_expired(self):
         import datetime
-        from stormhttp.primitives import HttpCookie
+        from stormhttp import HttpCookie
         cookie = HttpCookie(b'foo', b'bar')
 
         cookie.expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
@@ -23,7 +23,7 @@ class TestHttpCookies(unittest.TestCase):
         self.assertTrue(cookie.is_expired())
 
     def test_cookies_allowed_for_url_domain(self):
-        from stormhttp.primitives import HttpCookie
+        from stormhttp import HttpCookie
         cookie = HttpCookie(domain=b'www.google.com', secure=True)
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
 
@@ -46,7 +46,7 @@ class TestHttpCookies(unittest.TestCase):
         self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'https://www.ggoogle.com')))
 
     def test_cookies_allowed_for_url_path(self):
-        from stormhttp.primitives import HttpCookie
+        from stormhttp import HttpCookie
         cookie = HttpCookie(path=b'/foo')
 
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/foo')))
@@ -54,21 +54,21 @@ class TestHttpCookies(unittest.TestCase):
         self.assertFalse(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com/bar')))
 
     def test_cookies_insecure(self):
-        from stormhttp.primitives import HttpCookie
+        from stormhttp import HttpCookie
         cookie = HttpCookie(domain=b'www.google.com')
 
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'https://www.google.com')))
 
     def test_cookies_dot_prefix(self):
-        from stormhttp.primitives import HttpCookie
+        from stormhttp import HttpCookie
         cookie = HttpCookie(domain=b'.google.com')
 
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://www.google.com')))
         self.assertTrue(cookie.is_allowed_for_url(_make_http_url(b'http://google.com')))
 
     def test_cookies_expire_times(self):
-        from stormhttp.primitives import HttpCookie
+        from stormhttp import HttpCookie
         import datetime
         import time
         cookie = HttpCookie()

@@ -3,7 +3,7 @@ import unittest
 
 class TestHttpResponse(unittest.TestCase):
     def test_response_create(self):
-        from stormhttp.primitives import HttpResponse
+        from stormhttp import HttpResponse
         response = HttpResponse()
         response.version = b'1.1'
         response.status = b'OK'
@@ -15,7 +15,7 @@ class TestHttpResponse(unittest.TestCase):
         self.assertEqual(response.to_bytes(), b'HTTP/1.1 200 OK\r\nCONTENT-ENCODING: gzip\r\n\r\ntest')
 
     def test_response_cookies(self):
-        from stormhttp.primitives import HttpResponse, HttpCookie
+        from stormhttp import HttpResponse, HttpCookie
         response = HttpResponse()
         response.version = b'1.1'
         response.status_code = 200
@@ -29,7 +29,7 @@ class TestHttpResponse(unittest.TestCase):
         self.assertEqual(response.to_bytes(), b'HTTP/1.1 200 OK\r\nSET-COOKIE: a=2;\r\n\r\ntest')
 
     def test_response_parse_cookies(self):
-        from stormhttp.primitives import HttpResponse, HttpParser
+        from stormhttp import HttpResponse, HttpParser
         import datetime
 
         response = HttpResponse()

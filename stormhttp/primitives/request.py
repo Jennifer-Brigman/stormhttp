@@ -23,6 +23,9 @@ class HttpRequest(HttpMessage):
         if raw_url != b'':
             url = httptools.parse_url(raw_url)
             self.url = HttpUrl(raw_url, url.schema, url.host, url.port, url.path, url.query, url.fragment, url.userinfo)
+            if len(self.cookies) > 0:
+                for cookie in self.cookies.values():
+                    cookie.path = url.path
 
     def to_bytes(self) -> bytes:
         parts = [_HTTP_REQUEST_FORMAT_STRING % (self.method, self.url.get(), self.version)]

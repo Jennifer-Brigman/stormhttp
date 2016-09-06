@@ -168,11 +168,15 @@ class HttpMessage:
 
         self.headers.update(_headers)
         if _HEADER_COOKIE in self.headers:
+
+            # Add a single cookie for a b'Cookie' header.
+            cookie = HttpCookie(domain=_headers.get(b'Host'))
+
             for cookie_header in self.headers[_HEADER_COOKIE]:
-                cookie = HttpCookie()
                 for key, value in _COOKIE_REGEX.findall(cookie_header):
                     cookie.values[key] = value
-                self.cookies.add(cookie)
+
+            self.cookies.add(cookie)
             del self.headers[_HEADER_COOKIE]
 
         if _HEADER_SET_COOKIE in self.headers:

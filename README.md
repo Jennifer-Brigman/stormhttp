@@ -16,8 +16,8 @@ import datetime
 import stormhttp
 
 # Parsing a request
-req = stormhttp.primitives.HttpRequest()
-par = stormhttp.primitives.HttpParser(req)
+req = stormhttp.HttpRequest()
+par = stormhttp.HttpParser(req)
 par.feed_data(b'''GET /login HTTP/1.1
 Host: www.example.com
 Cookie: a=1; b=2;
@@ -28,11 +28,11 @@ Cookie: a=1; b=2;
 print(req.method)           # b'GET'
 print(req.version)          # b'1.1'
 print(req.headers[b'Host']) # [b'www.example.com']
-print(req.cookies[b'a'])    # b'1'
+print(req.cookies.all())    # b'1'
 print(req.url.path)         # b'/login'
 
 # Crafting a response
-res = stormhttp.primitives.HttpResponse()
+res = stormhttp.HttpResponse()
 res.version = b'2.0'
 res.status = 'OK'
 res.status_code = 200
@@ -41,7 +41,7 @@ res.headers[b'Content-Type'] = b'text/html; charset=utf-8'
 res.headers[b'Content-Length'] = len(res.body)  # It's fine to use integers! They're converted to bytes.
 
 # Support for Cookies!
-cookie = stormhttp.primitives.HttpCookie()
+cookie = stormhttp.HttpCookie()
 cookie.values[b'foo'] = b'bar'
 cookie.http_only = True
 cookie.expires = datetime.datetime.utcnow()

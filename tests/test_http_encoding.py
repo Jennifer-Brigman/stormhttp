@@ -3,7 +3,7 @@ import unittest
 
 class TestHttpEncodings(unittest.TestCase):
     def test_encoding_brotli(self):
-        from stormhttp.primitives import HttpResponse
+        from stormhttp import HttpResponse
         response = HttpResponse()
 
         original_body = b'abc' * 10

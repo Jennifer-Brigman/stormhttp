@@ -3,7 +3,7 @@ import unittest
 
 class TestHttpRequest(unittest.TestCase):
     def test_create_request(self):
-        from stormhttp.primitives import HttpRequest, HttpUrl
+        from stormhttp import HttpRequest, HttpUrl
         request = HttpRequest()
 
         request.version = b'1.1'
@@ -22,7 +22,7 @@ class TestHttpRequest(unittest.TestCase):
         ])
 
     def test_parse_cookie_first(self):
-        from stormhttp.primitives import HttpRequest, HttpParser
+        from stormhttp import HttpRequest, HttpParser
 
         data = b'GET / HTTP/1.1\r\nCookie: a=1;\r\n\r\n'
         request = HttpRequest()
@@ -33,7 +33,7 @@ class TestHttpRequest(unittest.TestCase):
         self.assertEqual(request.to_bytes(), b'GET / HTTP/1.1\r\nCOOKIE: a=1;\r\n\r\n')
 
     def test_http_parser(self):
-        from stormhttp.primitives import HttpRequest, HttpParser
+        from stormhttp import HttpRequest, HttpParser
 
         data = b'GET / HTTP/1.1\r\nACCEPT: text/html\r\nACCEPT-ENCODING: utf-8\r\n\r\n'
         for block_size in range(1, len(data)+1):
@@ -57,7 +57,7 @@ class TestHttpRequest(unittest.TestCase):
             self.assertEqual(request.headers.get(b'Accept-Encoding', None), [b'utf-8'])
 
     def test_http_multiple_headers(self):
-        from stormhttp.primitives import HttpRequest, HttpParser
+        from stormhttp import HttpRequest, HttpParser
 
         data = b'GET / HTTP/1.1\r\nACCEPT: text/html\r\nACCEPT: application/json\r\n\r\n'
         request = HttpRequest()
