@@ -15,6 +15,23 @@ Stormhttp requires Python 3.5 and is [available on PyPI](https://pypi.python.org
 python -m pip install stormhttp
 ```
 
+## Features
+:tada: Complete HTTP client and server functionality.
+
+:rocket: Super fast HTTP [parser](https://github.com/MagicStack/httptools/) and builder.
+
+:envelope: Easy-to-use containers for HTTP messages.
+
+:lock: Support SSL/TLS for HTTPS connections.
+
+:cookie: Cookies that can be stored offline for future Client sessions.
+
+:alien: Cross-Origin Resource Sharing management.
+
+:zzz: Completely asynchronous, no more blocking!
+
+... and many more! [View our documentation](https://github.com/SethMichaelLarson/stormhttp/docs) for a complete list of features.
+
 ## Using Stormhttp
 
 ```python
