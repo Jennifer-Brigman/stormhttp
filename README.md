@@ -1,15 +1,23 @@
-# Stormhttp
-Lightning-fast asynchronous web framework for Python 3.5+. Built to be a speedy lower-level replacement for aiohttp.
-Stormhttp is encoding-agnostic as all work is done on raw bytes rather than strings.
-We leave all those issues up to the application which allows both greater control and speed.
-
 [![Travis Master](https://img.shields.io/travis/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://travis-ci.org/SethMichaelLarson/stormhttp/branches)
 [![Coveralls Master](https://img.shields.io/coveralls/SethMichaelLarson/stormhttp/master.svg?maxAge=300)](https://coveralls.io/github/SethMichaelLarson/stormhttp)
 [![Requires.io](https://img.shields.io/requires/github/SethMichaelLarson/stormhttp.svg?maxAge=300)](https://requires.io/github/SethMichaelLarson/stormhttp/requirements)
 [![PyPI](https://img.shields.io/pypi/v/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 [![PyPI](https://img.shields.io/pypi/dm/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 
-### Example Usage
+Lightning-fast asynchronous web framework for Python 3.5+. Suitable for both client and server use-cases.
+Built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
+
+**This project is currently in alpha and therefore is NOT suitable for production environments. Please wait for the 0.1.0 release for production use.**
+
+## Installation
+
+Stormhttp requires Python 3.5 and is [available on PyPI](https://pypi.python.org/pypi/stormhttp). Use pip to install it ([Using a virtual environment is encouraged](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj90s7yr_vOAhUYzmMKHUBfDBMQFggeMAA&url=http%3A%2F%2Fdocs.python-guide.org%2Fen%2Flatest%2Fdev%2Fvirtualenvs%2F&usg=AFQjCNEvupNSRAVxfumkI5JFoxABd0GHhQ)):
+
+```
+python -m pip install stormhttp
+```
+
+## Using Stormhttp
 
 ```python
 import datetime
@@ -71,19 +79,3 @@ print(res.to_bytes().decode("utf-8"))
 ## License
 
 Stormhttp is licensed under the Apache 2.0 license.
-
-```
-Copyright 2016 Seth Michael Larson
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
