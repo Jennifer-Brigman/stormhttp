@@ -37,9 +37,8 @@ res.version = b'2.0'
 res.status = 'OK'
 res.status_code = 200
 res.body = b'Hello, world!'
-res.headers[b'Content-Type'] = b'text/html'
+res.headers[b'Content-Type'] = b'text/html; charset=utf-8'
 res.headers[b'Content-Length'] = len(res.body)  # It's fine to use integers! They're converted to bytes.
-
 
 # Support for Cookies!
 cookie = stormhttp.primitives.HttpCookie()
@@ -54,8 +53,9 @@ res.cookies.add(cookie)
 print(res.to_bytes().decode("utf-8"))
 
 # HTTP/2.0 200 OK
-# CONTENT-TYPE: text/html
-# SET-COOKIE: foo=bar; Domain=.example.com; Path=/; HttpOnly; Expires=Fri, 26 Aug 2016 20:13:10 GMT;
+# CONTENT-TYPE: text/html; charset=utf-8
+# CONTENT-LENGTH: 13
+# SET-COOKIE: foo=bar; Domain=.example.com; Path=/; Expires=Fri, 26 Aug 2016 20:13:10 GMT; HttpOnly;
 #
 # Hello, world!
 ```
