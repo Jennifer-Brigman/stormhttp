@@ -4,7 +4,7 @@ import typing
 __all__ = [
     "HttpHeaders"
 ]
-_QVALUE_REGEX = re.compile(b'\s?([^,;]+)(?:;q=(\\-?[\\d\\.]+))?(?:,\s?|$)')
+_QVALUE_REGEX = re.compile(b'\\s?([^,;]+)(?:;q=(\\-?[\\d\\.]+))?(?:,\\s?|$)')
 _QVALUE_DEFAULT = 1.0
 _HTTP_HEADER_FORMAT_STRING = b'%b: %b'
 _HTTP_HEADER_SEPARATOR = b'\r\n'
