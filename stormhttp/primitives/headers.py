@@ -1,3 +1,4 @@
+import collections
 import typing
 
 __all__ = [
@@ -15,6 +16,8 @@ class HttpHeaders(dict):
         return dict.__getitem__(self, key.upper())
 
     def __setitem__(self, key: bytes, val: typing.Union[bytes, typing.Iterable[bytes]]) -> None:
+        if isinstance(val, int):
+            val = [b'%d' % val]
         if isinstance(val, bytes):
             val = [val]
         dict.__setitem__(self, key.upper(), val)

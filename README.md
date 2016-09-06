@@ -36,17 +36,26 @@ res = stormhttp.primitives.HttpResponse()
 res.version = b'2.0'
 res.status = 'OK'
 res.status_code = 200
-res.headers[b'Content-Type'] = b'text/html'
-res.cookies[b'foo'] = b'bar'
-res.cookies.set_meta(b'foo', http_only=True, expires=datetime.datetime.utcnow())
 res.body = b'Hello, world!'
+res.headers[b'Content-Type'] = b'text/html'
+res.headers[b'Content-Length'] = len(res.body)  # It's fine to use integers! They're converted to bytes.
+
+
+# Support for Cookies!
+cookie = stormhttp.primitives.HttpCookie()
+cookie.values[b'foo'] = b'bar'
+cookie.http_only = True
+cookie.expires = datetime.datetime.utcnow()
+cookie.domain = b'.example.com'
+cookie.path = b'/'
+res.cookies.add(cookie)
 
 # Sending the bytes over the wire
 print(res.to_bytes().decode("utf-8"))
 
 # HTTP/2.0 200 OK
 # CONTENT-TYPE: text/html
-# SET-COOKIE: foo=bar; HttpOnly; Expires=Fri, 26 Aug 2016 20:13:10 GMT;
+# SET-COOKIE: foo=bar; Domain=.example.com; Path=/; HttpOnly; Expires=Fri, 26 Aug 2016 20:13:10 GMT;
 #
 # Hello, world!
 ```
