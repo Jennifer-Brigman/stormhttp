@@ -40,7 +40,7 @@ class HttpHeaders(dict):
         for key, val in dict(*args, **kwargs).items():
             self[key] = val
 
-    def qlist(self, key: bytes) -> typing.List[typing.Tuple[float, bytes]]:
+    def qlist(self, key: bytes) -> typing.List[typing.Tuple[bytes, float]]:
         """
         Sorts a header into a list according to it's q-values.
         Items without q-values are valued highest.
