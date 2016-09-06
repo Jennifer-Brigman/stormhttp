@@ -28,7 +28,7 @@ Cookie: a=1; b=2;
 print(req.method)           # b'GET'
 print(req.version)          # b'1.1'
 print(req.headers[b'Host']) # [b'www.example.com']
-print(req.cookies.all())    # b'1'
+print(req.cookies.all())    # {b'a': b'1', b'b': b'2'}
 print(req.url.path)         # b'/login'
 
 # Crafting a response

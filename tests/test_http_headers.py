@@ -27,3 +27,24 @@ class TestHttpHeaders(unittest.TestCase):
         headers[b'a'] = [b'1', b'2', b'3']
         self.assertEqual(headers[b'a'], [b'1', b'2', b'3'])
         self.assertEqual(headers.to_bytes(), b'A: 1\r\nA: 2\r\nA: 3')
+
+    def test_headers_qlist_no_qvalues(self):
+        from stormhttp import HttpHeaders
+
+        headers = HttpHeaders()
+        headers[b'Accept-Encoding'] = b'gzip, deflate, br'
+        self.assertEqual(headers.qlist(b'Accept-Encoding'), [(1.0, b'gzip'), (1.0, b'deflate'), (1.0, b'br')])
+
+    def test_headers_qlist_only_qvalues(self):
+        from stormhttp import HttpHeaders
+
+        headers = HttpHeaders()
+        headers[b'Accept'] = b'*/*;q=0.8,application/xml;q=0.9'
+        self.assertEqual(headers.qlist(b'Accept'), [(0.9, b'application/xml'), (0.8, b'*/*')])
+
+    def test_headers_qlist_mixed_qvalues(self):
+        from stormhttp import HttpHeaders
+
+        headers = HttpHeaders()
+        headers[b'Accept'] = b'application/xml;q=0.9,text/html,*/*;q=0.8'
+        self.assertEqual(headers.qlist(b'Accept'), [(1.0, b'text/html'), (0.9, b'application/xml'), (0.8, b'*/*')])

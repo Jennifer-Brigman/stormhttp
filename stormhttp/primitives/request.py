@@ -16,7 +16,7 @@ class HttpRequest(HttpMessage):
         if headers is not None:
             for key, val in headers:
                 self.headers[key] = val
-        self.url = None
+        self.url = None  # type: HttpUrl
         self.method = b''
 
     def on_url(self, raw_url: bytes):

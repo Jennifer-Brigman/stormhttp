@@ -112,6 +112,13 @@ class HttpCookies(dict):
         if cookie_key in self:
             dict.__delitem__(self, cookie_key)
 
+    def all(self) -> typing.Dict[bytes, bytes]:
+        values = {}
+        for cookie in self.values():
+            for key, value in cookie.values.items():
+                values[key] = value
+        return values
+
     def to_bytes(self, set_cookie: bool=False) -> bytes:
         if set_cookie:
             all_cookie_crumbs = []
