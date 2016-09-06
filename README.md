@@ -5,7 +5,8 @@
 [![PyPI](https://img.shields.io/pypi/dm/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 
 Lightning-fast asynchronous web framework for Python 3.5+. Suitable for both client and server use-cases. Built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
-**This project is currently in _ALPHA_ and therefore is _NOT_ suitable for production environments.**
+
+> **NOTE:** This project is currently in alpha (>0.1.0) and therefore may not be suitable for production environments.
 
 ## Installation
 
