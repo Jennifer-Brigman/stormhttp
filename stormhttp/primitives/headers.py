@@ -4,11 +4,11 @@ import typing
 __all__ = [
     "HttpHeaders"
 ]
-_QLIST_REGEX = re.compile(b'\s?([^,;]+)(?:;q=(\\-?[\\d\\.]+))?(?:,\s?|$)')
+_QVALUE_REGEX = re.compile(b'\s?([^,;]+)(?:;q=(\\-?[\\d\\.]+))?(?:,\s?|$)')
+_QVALUE_DEFAULT = 1.0
 _HTTP_HEADER_FORMAT_STRING = b'%b: %b'
 _HTTP_HEADER_SEPARATOR = b'\r\n'
-# text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-# r.findall(b'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+
 
 class HttpHeaders(dict):
     def __init__(self, *args, **kwargs):
@@ -50,14 +50,14 @@ class HttpHeaders(dict):
         header = self.get(key)
         if header is None:
             raise KeyError(str(key))
-        qlist = _QLIST_REGEX.findall(b','.join(header))
+        qlist = _QVALUE_REGEX.findall(b','.join(header))
         for i in range(len(qlist)):
             item, qvalue = qlist[i]
             if qvalue == b'':
-                qlist[i] = (1.0, item)
+                qlist[i] = (item, _QVALUE_DEFAULT)
             else:
-                qlist[i] = (float(qvalue.decode("ascii")), item)
-        return sorted(qlist, key=lambda k: k[0], reverse=True)
+                qlist[i] = (item, float(qvalue))
+        return sorted(qlist, key=lambda k: k[1], reverse=True)
 
     def to_bytes(self) -> bytes:
         return _HTTP_HEADER_SEPARATOR.join((

@@ -19,6 +19,8 @@ import stormhttp
 req = stormhttp.HttpRequest()
 par = stormhttp.HttpParser(req)
 par.feed_data(b'''GET /login HTTP/1.1
+Accept: text/html,application/xml;q=0.9,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
 Host: www.example.com
 Cookie: a=1; b=2;
 
@@ -30,6 +32,12 @@ print(req.version)          # b'1.1'
 print(req.headers[b'Host']) # [b'www.example.com']
 print(req.cookies.all())    # {b'a': b'1', b'b': b'2'}
 print(req.url.path)         # b'/login'
+
+# HttpHeaders can parse q-values for you!
+print(req.headers.qlist(b'Accept')) # [(1.0, b'text/html'), (b'application/xml', 0.9), (b'*/*', 0.8)]
+
+# Also works for lists with no q-values. Preserves order!
+print(req.headers.qlist(b'Accept-Encoding')) # [(1.0, b'gzip'), (1.0, b'deflate'), (1.0, b'br')]
 
 # Crafting a response
 res = stormhttp.HttpResponse()
