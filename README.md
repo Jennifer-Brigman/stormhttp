@@ -4,10 +4,10 @@
 [![PyPI](https://img.shields.io/pypi/v/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 [![PyPI](https://img.shields.io/pypi/dm/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 
-Lightning-fast asynchronous web framework for Python 3.5+. Suitable for both client and server use-cases.
-Built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
+:zap::zap: Lightning-fast asynchronous web framework for Python 3.5+ :zap::zap:
 
-**This project is currently in alpha and therefore is NOT suitable for production environments. Please wait for the 0.1.0 release for production use.**
+Suitable for both client and server use-cases. Built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
+**This project is currently in alpha and therefore is NOT suitable for production environments.**
 
 ## Installation
 
