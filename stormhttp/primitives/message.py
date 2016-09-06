@@ -153,7 +153,10 @@ class HttpMessage:
                 if _key_buffer is None:
                     _key_buffer = [key]
                     if _key is not None:
-                        _headers[_key] = _headers.get(_key, []) + [b''.join(_val_buffer)]
+                        if _key in _headers:
+                            _headers[_key].append(b''.join(_val_buffer))
+                        else:
+                            _headers[_key] = [b''.join(_val_buffer)]
                     _key = None
                 else:
                     _key_buffer.append(key)
@@ -164,7 +167,10 @@ class HttpMessage:
                     _val_buffer = []
                 _val_buffer.append(val)
         if _key is not None:
-            _headers[_key] = _headers.get(_key, []) + [b''.join(_val_buffer)]
+            if _key in _headers:
+                _headers[_key].append(b''.join(_val_buffer))
+            else:
+                _headers[_key] = [b''.join(_val_buffer)]
 
         self.headers.update(_headers)
         if _HEADER_COOKIE in self.headers:
