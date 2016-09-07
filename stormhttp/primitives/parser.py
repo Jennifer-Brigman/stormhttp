@@ -44,10 +44,7 @@ class HttpParser:
         :param data: Data to be parsed.
         :return: None
         """
-        try:
-            self._parser.feed_data(data)
-        except httptools.HttpParserError as error:
-            raise HttpParserError(str(error))
+        self._parser.feed_data(data)
         if not self._headers_done and self._message.is_header_complete():
             self._headers_done = True
             if isinstance(self._message, HttpRequest):

@@ -1,7 +1,7 @@
 import asyncio
 import stormhttp
 
-SIZE_OF_RESPONSE = 1024 * 100  # 100 Kibibytes
+SIZE_OF_RESPONSE = 1024 * 1024  # 1 MB
 RESPONSE_DATA = b'x' * SIZE_OF_RESPONSE
 
 

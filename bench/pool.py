@@ -1,9 +1,10 @@
 import asyncio
+import math
 import time
 import stormhttp
 
 NUMBER_OF_REQUESTS = 1000
-NUMBER_OF_SESSIONS = 10
+NUMBER_OF_SESSIONS = int(math.ceil(math.sqrt(NUMBER_OF_REQUESTS)))
 
 
 async def main():
@@ -22,6 +23,7 @@ async def main():
         await future
     end_time = time.time()    # --- STOP TIMER ----
 
+    print("Routed {0} requests in {1:.4f} seconds.".format(NUMBER_OF_REQUESTS, end_time-start_time))
     print("Achieved an average of {0:.4f}ms per request.".format((end_time - start_time) * 1000 / NUMBER_OF_REQUESTS))
 
 if __name__ == "__main__":

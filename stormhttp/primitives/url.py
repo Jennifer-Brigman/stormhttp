@@ -11,7 +11,7 @@ class HttpUrl:
     def __init__(self, raw: bytes, schema: bytes, host: bytes, port: int, path: bytes,
                  query: bytes, fragment: bytes, user_info: bytes):
         self.raw = raw
-        self.schema = schema if schema is not None else b''
+        self.schema = schema.lower() if schema is not None else b''
         self.host = host if host is not None else b''
         self.port = port if port is not None else -1
         self.path = path if (path is not None and path != b'') else b'/'
