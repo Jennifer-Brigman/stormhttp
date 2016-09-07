@@ -1,6 +1,7 @@
 import asyncio
 import typing
 from ..primitives import HttpRequest, HttpResponse
+from ..primitives.message import _SUPPORTED_ENCODINGS
 
 __all__ = [
     "RequestRouter"
@@ -9,6 +10,7 @@ _PREFIX_DELIMITER = b'/'
 _PREFIX_LEAF = b'/'
 _HTTP_METHOD_GET = b'GET'
 _HTTP_METHOD_HEAD = b'HEAD'
+_HEADER_ACCEPT_ENCODING = b'Accept-Encoding'
 
 
 class RequestRouter:
@@ -30,6 +32,7 @@ class RequestRouter:
             response = HttpResponse()
             response.status_code = 404
             response.status = b'Not Found'
+            response.headers[b'Content-Length'] = 0
         else:
             is_head = False
             if request.method == _HTTP_METHOD_HEAD and request.method not in prefix_branch and _HTTP_METHOD_GET in prefix_branch:
@@ -40,6 +43,7 @@ class RequestRouter:
                 response.headers[b'Allow'] = b', '.join(list(prefix_branch.keys()))
                 response.status_code = 405
                 response.status = b'Method Not Allowed'
+                response.headers[b'Content-Length'] = 0
             else:
                 handler = prefix_branch[request.method]
                 if asyncio.iscoroutinefunction(handler):
@@ -48,6 +52,11 @@ class RequestRouter:
                     response = handler(request)
             if is_head:
                 response.body = b''
+        if _HEADER_ACCEPT_ENCODING in request.headers and len(response.body) > 0:
+            for encoding, _ in request.headers.qlist(_HEADER_ACCEPT_ENCODING):
+                if encoding in _SUPPORTED_ENCODINGS:
+                    response.set_encoding(encoding)
+                    break
         response.version = request.version
         transport.write(response.to_bytes())
 
