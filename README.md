@@ -7,7 +7,6 @@
 Lightning-fast asynchronous web framework for Python 3.5+. Suitable for both client and server use-cases. Built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
 
 > **NOTE:** This project is currently in alpha (>0.1.0) and therefore may not be suitable for production environments.
-
 ## Installation
 
 Stormhttp requires Python 3.5 and is [available on PyPI](https://pypi.python.org/pypi/stormhttp). Use pip to install it ([Using a virtual environment is encouraged](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj90s7yr_vOAhUYzmMKHUBfDBMQFggeMAA&url=http%3A%2F%2Fdocs.python-guide.org%2Fen%2Flatest%2Fdev%2Fvirtualenvs%2F&usg=AFQjCNEvupNSRAVxfumkI5JFoxABd0GHhQ)):
@@ -16,80 +15,96 @@ Stormhttp requires Python 3.5 and is [available on PyPI](https://pypi.python.org
 python -m pip install stormhttp
 ```
 
+Or if you want to work with the latest development version you may download from git.
+```
+git clone https://www.github.com/SethMichaelLarson/stormhttp.git
+cd stormhttp && python setup.py install
+```
+
 ## Features
+
 :tada: Complete HTTP client and server functionality.
 
 :rocket: Super fast HTTP [parser](https://github.com/MagicStack/httptools/) and builder.
 
-:envelope: Easy-to-use containers for HTTP messages.
+:muscle: Extremely flexible by having minimal decisions made for you. Power users rejoice!
 
 :lock: Support SSL/TLS for HTTPS connections.
 
 :cookie: Cookies that can be stored offline for future Client sessions.
 
-:alien: Cross-Origin Resource Sharing management.
+:package: Tons of optional extensions like sessions, CORS, authentication, all ready to use!
 
 :zzz: Completely asynchronous, no more blocking!
 
 ... and many more! [View our documentation](https://github.com/SethMichaelLarson/stormhttp/docs) for a complete list of features.
 
-## Using Stormhttp
+## Benchmarks
 
-```python
-import datetime
-import stormhttp
+Did I mention that Stormhttp is lightning-fast? :runner::dash:
 
-# Parsing a request
-req = stormhttp.HttpRequest()
-par = stormhttp.HttpParser(req)
-par.feed_data(b'''GET /login HTTP/1.1
-Accept: text/html,application/xml;q=0.9,*/*;q=0.8
-Accept-Encoding: gzip, deflate, br
-Host: www.example.com
-Cookie: a=1; b=2;
+| Statistic | Stormhttp | Aiohttp | Albatross | Flask |
+| --------- | --------- | ------- | --------- | ----- |
+| Latency | 78.36 ms | 163.17 ms | 61.31 ms | 121.16ms |
+| Requests | 184,852 | 64,520 | 54,645 | 12,947 |
+| Requests/s | 6141.12 | 2143.44 | 1815.15 | 430.13 |
+| Transferred | 17.64 GB | 6.16 GB | 5.21 GB | 1.24 GB |
+| Throughput | 600.12 MB/s | 209.57 MB/s | 177.43 MB/s | 42.07 MB/s |
 
-''')
+#### Stormhttp
 
-# Accessing the parsed values
-print(req.method)           # b'GET'
-print(req.version)          # b'1.1'
-print(req.headers[b'Host']) # [b'www.example.com']
-print(req.cookies.all())    # {b'a': b'1', b'b': b'2'}
-print(req.url.path)         # b'/login'
+```
+Running 30s test @ http://127.0.0.1:8080
+  250 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    78.36ms   79.95ms   1.98s    98.99%
+    Req/Sec    27.64     12.22   393.00     85.80%
+  184852 requests in 30.10s, 17.64GB read
+  Socket errors: connect 0, read 0, write 0, timeout 219
+Requests/sec:   6141.12
+Transfer/sec:    600.12MB
+```
 
-# HttpHeaders can parse q-values for you!
-print(req.headers.qlist(b'Accept')) # [(b'text/html', 1.0), (b'application/xml', 0.9), (b'*/*', 0.8)]
+#### Aiohttp
 
-# Also works for lists with no q-values. Preserves order!
-print(req.headers.qlist(b'Accept-Encoding')) # [(b'gzip', 1.0), (b'deflate', 1.0), (b'br', 1.0)]
+```
+Running 30s test @ http://127.0.0.1:8080
+  250 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   163.17ms   88.69ms   1.99s    89.03%
+    Req/Sec    12.92      7.72   240.00     91.12%
+  64520 requests in 30.10s, 6.16GB read
+  Socket errors: connect 0, read 0, write 0, timeout 340
+Requests/sec:   2143.44
+Transfer/sec:    209.57MB
+```
 
-# Crafting a response
-res = stormhttp.HttpResponse()
-res.version = b'2.0'
-res.status = 'OK'
-res.status_code = 200
-res.body = b'Hello, world!'
-res.headers[b'Content-Type'] = b'text/html; charset=utf-8'
-res.headers[b'Content-Length'] = len(res.body)  # It's fine to use integers! They're converted to bytes.
+#### Albatross
 
-# Support for Cookies!
-cookie = stormhttp.HttpCookie()
-cookie.values[b'foo'] = b'bar'
-cookie.http_only = True
-cookie.expires = datetime.datetime.utcnow()
-cookie.domain = b'.example.com'
-cookie.path = b'/'
-res.cookies.add(cookie)
+```
+Running 30s test @ http://127.0.0.1:8000
+  250 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    61.31ms   50.85ms   1.66s    98.87%
+    Req/Sec    20.34      9.82    40.00     62.46%
+  54645 requests in 30.10s, 5.21GB read
+  Socket errors: connect 0, read 54703, write 0, timeout 36
+Requests/sec:   1815.65
+Transfer/sec:    177.43MB
+```
 
-# Sending the bytes over the wire
-print(res.to_bytes().decode("utf-8"))
+#### Flask
 
-# HTTP/2.0 200 OK
-# CONTENT-TYPE: text/html; charset=utf-8
-# CONTENT-LENGTH: 13
-# SET-COOKIE: foo=bar; Domain=.example.com; Path=/; Expires=Fri, 26 Aug 2016 20:13:10 GMT; HttpOnly;
-#
-# Hello, world!
+```
+Running 30s test @ http://127.0.0.1:5000
+  250 threads and 500 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   121.16ms  131.92ms   1.73s    94.91%
+    Req/Sec    14.15      8.03    40.00     80.15%
+  12947 requests in 30.10s, 1.24GB read
+  Socket errors: connect 0, read 73, write 0, timeout 279
+Requests/sec:    430.13
+Transfer/sec:     42.07MB
 ```
 
 ## License

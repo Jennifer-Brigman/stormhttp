@@ -19,6 +19,7 @@ _HEADER_CONNECTION = b'Connection'
 _HEADER_CONNECTION_CLOSE = b'close'
 _HEADER_URI = b'URI'
 _HEADER_HOST = b'Host'
+_HAS_TCP_NODELAY = hasattr(socket, "TCP_NODELAY")
 
 
 class ClientSession:
@@ -64,8 +65,9 @@ class ClientSession:
                     )
 
                     # Set TCP_NODELAY to allow writes to be minimally buffered.
-                    sock = self._writer.transport.get_extra_info("socket")
-                    sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, True)
+                    if _HAS_TCP_NODELAY:
+                        sock = self._writer.transport.get_extra_info("socket")
+                        sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, True)
 
                 except _ssl.SSLError as error:
                     if _CERTIFICATE_VERIFY_FAILED in str(error):

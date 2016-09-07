@@ -23,7 +23,8 @@ setup(
         "stormhttp/client/cookie_jar",
         "stormhttp/primitives",
         "stormhttp/server",
-        "stormhttp/server/sessions"
+        "stormhttp/server/sessions",
+        "stormhttp/server/sessions/storage"
     ],
     version=__version__,
     description="Lightning-fast asynchronous web framework for Python 3.5+",
