@@ -24,18 +24,18 @@ cd stormhttp && python setup.py install
 
 ## Features
 
- - Complete HTTP client and server functionality.
- - Super fast HTTP [parser](https://github.com/MagicStack/httptools/) and builder.
- - Extremely flexible by having minimal decisions made for you. Power users rejoice!
- - Support SSL/TLS for HTTPS connections.
- - Cookies that can be stored offline for future Client sessions.
- - Tons of optional extensions like sessions, CORS, authentication, all ready to use!
+- Complete HTTP client and server functionality.
+- Super fast HTTP [parser](https://github.com/MagicStack/httptools/) and builder.
+- Extremely flexible by having minimal decisions made for you. Power users rejoice!
+- Support SSL/TLS for HTTPS connections.
+- Cookies that can be stored offline for future Client sessions.
+- Tons of optional extensions like sessions, CORS, authentication, all ready to use!
 
 ... and many more! [View our documentation](https://github.com/SethMichaelLarson/stormhttp/docs) for a complete list of features.
 
 ## Benchmarks
 
-Did I mention that Stormhttp is lightning-fast? :runner::dash:
+Did I mention that Stormhttp is lightning-fast?
 
 #### Stormhttp
 
