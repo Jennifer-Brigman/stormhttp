@@ -23,7 +23,8 @@ _MAX_AGE_MAXIMUM_VALUE = 31536000
 
 def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
                   etag: typing.Callable[[HttpRequest], bytes]=None,
-                  last_modified: typing.Callable[[HttpRequest], datetime.datetime]=None) -> typing.Callable[[HttpRequest], HttpResponse]:
+                  last_modified: typing.Callable[[HttpRequest], datetime.datetime]=None,
+                  expires: typing.Callable[[HttpRequest], datetime.datetime]=None):
 
     # Warning about the bound on Cache-Control: max-age greater than a year (RFC 2616 Section 14.9).
     if max_age is not None and max_age > _MAX_AGE_MAXIMUM_VALUE:
@@ -47,7 +48,7 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
             cache_active = False
 
             # Conditional request handling
-            if request.method in _CACHE_METHODS:
+            if b'no-cache' not in request.headers.get(b'Cache-Control', []) and request.method in _CACHE_METHODS:
                 cache_active = True
 
                 # Etag / If-None-Match
@@ -73,10 +74,18 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
                     if cache_etag is None:
                         cache_etag = etag(request)
                     response.headers[b'Etag'] = cache_etag
+
                 if last_modified is not None:
                     if cache_last_modified is None:
                         cache_last_modified = last_modified(request)
                     response.headers[b'Last-Modified'] = cache_last_modified.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+
+                if expires is not None:
+                    expire_time = expires(request)
+                    if isinstance(expire_time, datetime.datetime):
+                        response.headers[b'Expires'] = expire_time.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+                    else:
+                        response.headers[b'Expires'] = b'0'
 
             return response
 
@@ -86,7 +95,7 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
             cache_active = False
 
             # Conditional request handling
-            if request.method in _CACHE_METHODS:
+            if b'no-cache' not in request.headers.get(b'Cache-Control', []) and request.method in _CACHE_METHODS:
                 cache_active = True
 
                 # Etag / If-None-Match
@@ -112,10 +121,18 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
                     if cache_etag is None:
                         cache_etag = etag(request)
                     response.headers[b'Etag'] = cache_etag
+
                 if last_modified is not None:
                     if cache_last_modified is None:
                         cache_last_modified = last_modified(request)
                     response.headers[b'Last-Modified'] = cache_last_modified.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+
+                if expires is not None:
+                    expire_time = expires(request)
+                    if isinstance(expire_time, datetime.datetime):
+                        response.headers[b'Expires'] = expire_time.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+                    else:
+                        response.headers[b'Expires'] = b'0'
 
             return response
 

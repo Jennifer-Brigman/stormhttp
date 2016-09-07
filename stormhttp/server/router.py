@@ -14,6 +14,7 @@ _HEADER_ACCEPT_ENCODING = b'Accept-Encoding'
 class RequestRouter:
     def __init__(self):
         self._prefix = {}  # type: typing.Dict[bytes, typing.Any]
+        self.min_compression_length = 1400
 
     def add_route(self, path: bytes, method: bytes, handler: typing.Callable[[HttpRequest], HttpResponse]) -> None:
         prefix_branch = self._traverse_prefix_autofill(path)
@@ -50,7 +51,7 @@ class RequestRouter:
                     response = handler(request)
             if is_head:
                 response.body = b''
-        if b'Accept-Encoding' in request.headers and len(response):
+        if b'Accept-Encoding' in request.headers and len(response) > self.min_compression_length:
             for encoding, _ in request.headers.qlist(b'Accept-Encoding'):
                 if encoding in _SUPPORTED_ENCODINGS:
                     response.set_encoding(encoding)
