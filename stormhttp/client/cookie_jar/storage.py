@@ -43,7 +43,7 @@ class FileCookieJarStorage(AbstractCookieJarStorage):
             cookie.http_only = http_only == b'1'
             cookie.secure = secure == b'1'
             cookie.max_age = None if max_age == b'' else int(max_age.decode("utf-8"))
-            cookie.expires = None if expires == b'' else datetime.datetime.strptime(expires.decode("ascii"), _COOKIE_EXPIRE_FORMAT)
+            cookie.expires = None if expires == b'' else datetime.datetime.strptime(expires.decode("utf-8"), _COOKIE_EXPIRE_FORMAT)
             cookies.append(cookie)
 
         cookie_file.close()
@@ -57,7 +57,7 @@ class FileCookieJarStorage(AbstractCookieJarStorage):
                 b';'.join([b'%b=%b' % (key, val) for key, val in cookie.values.items()]),
                 b'' if cookie.domain is None else cookie.domain,
                 b'' if cookie.path is None else cookie.path,
-                b'' if cookie.expires is None else cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("ascii"),
+                b'' if cookie.expires is None else cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8"),
                 b'' if cookie.max_age is None else b'%d' % cookie.max_age,
                 b'1' if cookie.http_only else b'0',
                 b'1' if cookie.secure else b'0',

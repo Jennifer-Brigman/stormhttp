@@ -54,4 +54,4 @@ class HttpParser:
                 self._message.method = self._parser.get_method()
             else:
                 self._message.status_code = self._parser.get_status_code()
-            self._message.version = self._parser.get_http_version().encode("ascii")
+            self._message.version = self._parser.get_http_version().encode("utf-8")

@@ -101,7 +101,7 @@ class HttpMessage:
         # If the headers are giving us a hint, then try them first.
         charset = _CHARSET_REGEX.match(self.headers.get(b'Content-Type', [b''])[0])
         if charset is not None:
-            charset = charset.group(1).decode("ascii")
+            charset = charset.group(1).decode("utf-8")
             try:
                 body = self.body.decode(charset)
             except UnicodeDecodeError:
@@ -201,7 +201,7 @@ class HttpMessage:
                             cookie.path = value
                         elif key_lower == b'expires':
                             try:
-                                cookie.expires = datetime.datetime.strptime(value.decode("ascii"), _COOKIE_EXPIRE_FORMAT)
+                                cookie.expires = datetime.datetime.strptime(value.decode("utf-8"), _COOKIE_EXPIRE_FORMAT)
                             except ValueError:
                                 pass
                             except UnicodeDecodeError:

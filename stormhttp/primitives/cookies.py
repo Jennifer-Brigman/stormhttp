@@ -145,7 +145,7 @@ class HttpCookies(dict):
                 if cookie.path is not None:
                     cookie_crumbs.append(_COOKIE_FORMAT_PATH % cookie.path)
                 if cookie.expires is not None:
-                    cookie_crumbs.append(_COOKIE_FORMAT_EXPIRES % cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("ascii"))
+                    cookie_crumbs.append(_COOKIE_FORMAT_EXPIRES % cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8"))
                 if cookie.max_age is not None:
                     cookie_crumbs.append(_COOKIE_FORMAT_MAX_AGE % cookie.max_age)
                 if cookie.http_only:
