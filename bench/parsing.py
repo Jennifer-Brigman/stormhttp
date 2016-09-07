@@ -27,7 +27,7 @@ Vary: X-PJAX, Accept-Encoding
 
 '''
 
-NUMBER_OF_TIMES_TO_PARSE = 100000
+NUMBER_OF_TIMES_TO_PARSE = 1000000
 
 if __name__ == "__main__":
     parser = stormhttp.HttpParser()

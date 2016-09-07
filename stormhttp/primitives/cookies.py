@@ -10,6 +10,18 @@ __all__ = [
 ]
 _EPOCH = datetime.datetime.fromtimestamp(0)
 _COOKIE_EXPIRE_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
+_COOKIE_DELIMITER = b' '
+_COOKIE_SUBDOMAIN_DELIMITER = b'.'
+_COOKIE_FORMAT_DOMAIN = b'Domain=%b;'
+_COOKIE_FORMAT_PATH = b'Path=%b;'
+_COOKIE_FORMAT_EXPIRES = b'Expires=%b;'
+_COOKIE_FORMAT_MAX_AGE = b'MaxAge=%d;'
+_COOKIE_FORMAT_HTTP_ONLY = b'HttpOnly;'
+_COOKIE_FORMAT_SECURE = b'Secure;'
+_COOKIE_FORAMT_KEY_VALUE = b'%b=%b;'
+_HTTPS_SCHEMA = b'https'
+_HTTP_HEADER_COOKIE = b'COOKIE: %b'
+_HTTP_HEADER_SET_COOKIE = b'SET-COOKIE:'
 
 
 class HttpCookie:
@@ -72,13 +84,13 @@ class HttpCookie:
     def is_allowed_for_url(self, url: HttpUrl) -> bool:
 
         # First check to see if the cookie is for HTTPS only.
-        if self.secure and url.schema != b'https':
+        if self.secure and url.schema != _HTTPS_SCHEMA:
             return False
 
         # Check that this is either a domain or sub-domain.
         if self.domain is not None:
-            url_domains = url.host.split(b'.')
-            cookie_domains = self.domain.split(b'.')
+            url_domains = url.host.split(_COOKIE_SUBDOMAIN_DELIMITER)
+            cookie_domains = self.domain.split(_COOKIE_SUBDOMAIN_DELIMITER)
             if cookie_domains[0] == b'':  # This is to remove the '.google.com' "fix" for old browsers.
                 cookie_domains = cookie_domains[1:]
             if len(cookie_domains) > len(url_domains):
@@ -123,24 +135,24 @@ class HttpCookies(dict):
         if set_cookie:
             all_cookie_crumbs = []
             for cookie in self.values():
-                cookie_crumbs = [b'SET-COOKIE:']
+                cookie_crumbs = [_HTTP_HEADER_SET_COOKIE]
                 for key, value in cookie.values.items():
-                    cookie_crumbs.append(b'%b=%b;' % (key, value))
+                    cookie_crumbs.append(_COOKIE_FORAMT_KEY_VALUE % (key, value))
 
                 if cookie.domain is not None:
-                    cookie_crumbs.append(b'Domain=%b;' % cookie.domain)
+                    cookie_crumbs.append(_COOKIE_FORMAT_DOMAIN % cookie.domain)
                 if cookie.path is not None:
-                    cookie_crumbs.append(b'Path=%b;' % cookie.path)
+                    cookie_crumbs.append(_COOKIE_FORMAT_PATH % cookie.path)
                 if cookie.expires is not None:
-                    cookie_crumbs.append(b'Expires=%b;' % cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("ascii"))
+                    cookie_crumbs.append(_COOKIE_FORMAT_EXPIRES % cookie.expires.strftime(_COOKIE_EXPIRE_FORMAT).encode("ascii"))
                 if cookie.max_age is not None:
-                    cookie_crumbs.append(b'MaxAge=%d;' % cookie.max_age)
+                    cookie_crumbs.append(_COOKIE_FORMAT_MAX_AGE % cookie.max_age)
                 if cookie.http_only:
-                    cookie_crumbs.append(b'HttpOnly;')
+                    cookie_crumbs.append(_COOKIE_FORMAT_HTTP_ONLY)
                 if cookie.secure:
-                    cookie_crumbs.append(b'Secure;')
+                    cookie_crumbs.append(_COOKIE_FORMAT_SECURE)
 
-                all_cookie_crumbs.append(b' '.join(cookie_crumbs))
+                all_cookie_crumbs.append(_COOKIE_DELIMITER.join(cookie_crumbs))
             return b'\r\n'.join(all_cookie_crumbs)
         else:
             all_values = {}
@@ -148,4 +160,4 @@ class HttpCookies(dict):
                 for key, value in cookie.values.items():
                     if key not in all_values:
                         all_values[key] = value
-            return b'COOKIE: %b;' % b'; '.join([b'%b=%b' % (key, all_values[key]) for key in all_values])
+            return _HTTP_HEADER_COOKIE % _COOKIE_DELIMITER.join([_COOKIE_FORAMT_KEY_VALUE % (key, all_values[key]) for key in all_values])

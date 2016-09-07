@@ -24,4 +24,6 @@ class HttpUrl:
         return self._get_form
 
     def __repr__(self):
-        return "<HttpUrl raw={}>".format(self.raw)
+        return "<HttpUrl raw={} schema={} host={} port={} path={} query={}>".format(
+            self.raw, self.schema, self.host, self.port, self.path, self.query
+        )

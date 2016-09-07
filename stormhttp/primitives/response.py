@@ -6,7 +6,6 @@ from .message import HttpMessage
 __all__ = [
     "HttpResponse"
 ]
-_HTTP_RESPONSE_FORMAT_STRING = b'HTTP/%b %d %b'
 
 
 class HttpResponse(HttpMessage):
@@ -23,7 +22,7 @@ class HttpResponse(HttpMessage):
         self.status = status
 
     def to_bytes(self) -> bytes:
-        parts = [_HTTP_RESPONSE_FORMAT_STRING % (self.version, self.status_code, self.status)]
+        parts = [b'HTTP/%b %d %b' % (self.version, self.status_code, self.status)]
         if len(self.headers) > 0:
             parts.append(self.headers.to_bytes())
         if len(self.cookies):
