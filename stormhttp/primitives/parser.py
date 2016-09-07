@@ -6,13 +6,8 @@ from .response import HttpResponse
 
 # Global Variables
 __all__ = [
-    "HttpParser",
-    "HttpParserError"
+    "HttpParser"
 ]
-
-
-class HttpParserError(Exception):
-    pass
 
 
 class HttpParser:
@@ -31,10 +26,8 @@ class HttpParser:
         """
         if isinstance(message, HttpRequest):
             self._parser = httptools.HttpRequestParser(message)
-        elif isinstance(message, HttpResponse):
-            self._parser = httptools.HttpResponseParser(message)
         else:
-            raise HttpParserError("Must be called with either HttpRequest or HttpResponse object.")
+            self._parser = httptools.HttpResponseParser(message)
         self._message = message
         self._headers_done = False
 

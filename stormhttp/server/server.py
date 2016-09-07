@@ -39,6 +39,9 @@ class Server:
         self._coro = None
         self.router = RequestRouter()
 
-    async def run(self, host: str, port: int, ssl: _ssl.SSLContext=None):
-        self._coro = self.loop.create_server(lambda: ServerHttpProtocol(self), host, port, ssl=ssl)
-        await self._coro
+    def run(self, host: str, port: int, ssl: _ssl.SSLContext=None):
+        try:
+            self.loop.run_until_complete(self.loop.create_server(lambda: ServerHttpProtocol(self), host, port, ssl=ssl))
+            self.loop.run_forever()
+        except KeyboardInterrupt:
+            pass
