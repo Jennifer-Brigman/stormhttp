@@ -27,30 +27,34 @@ Vary: X-PJAX, Accept-Encoding
 
 '''
 
-NUMBER_OF_TIMES_TO_PARSE = 1000000
+NUMBER_OF_TIMES_TO_PARSE = 100000
 
 if __name__ == "__main__":
     parser = stormhttp.HttpParser()
     range_iter = range(NUMBER_OF_TIMES_TO_PARSE)
 
     print("Starting benchmark for parsing {} requests.".format(NUMBER_OF_TIMES_TO_PARSE))
-    start_time = time.time()  # --- START TIMER ---
 
+    total_time = 0
     for _ in range_iter:
         parser.set_target(stormhttp.HttpRequest())
+        start_time = time.time()  # --- START TIMER ---
         parser.feed_data(RAW_REQUEST)
+        end_time = time.time()    # --- STOP TIMER ----
+        total_time += (end_time - start_time)
 
-    end_time = time.time()    # --- STOP TIMER ----
-    print("Achieved an average of {0:.4f}ms per parsed request.".format((end_time - start_time) * 1000 / NUMBER_OF_TIMES_TO_PARSE))
+    print("Achieved an average of {0:.4f}ms per parsed request.".format((total_time) * 1000 / NUMBER_OF_TIMES_TO_PARSE))
 
     range_iter = range(NUMBER_OF_TIMES_TO_PARSE)
 
     print("Starting benchmark for parsing {} responses.".format(NUMBER_OF_TIMES_TO_PARSE))
-    start_time = time.time()  # --- START TIMER ---
 
+    total_time = 0
     for _ in range_iter:
         parser.set_target(stormhttp.HttpResponse())
+        start_time = time.time()  # --- START TIMER ---
         parser.feed_data(RAW_RESPONSE)
+        end_time = time.time()    # --- STOP TIMER ----
+        total_time += (end_time - start_time)
 
-    end_time = time.time()    # --- STOP TIMER ----
-    print("Achieved an average of {0:.4f}ms per parsed response.".format((end_time - start_time) * 1000 / NUMBER_OF_TIMES_TO_PARSE))
+    print("Achieved an average of {0:.4f}ms per parsed response.".format((total_time) * 1000 / NUMBER_OF_TIMES_TO_PARSE))

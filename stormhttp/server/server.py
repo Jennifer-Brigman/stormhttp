@@ -1,6 +1,7 @@
 import asyncio
 import ssl as _ssl
 import typing
+from .router import RequestRouter
 from ..primitives import HttpParser, HttpRequest, HttpResponse
 
 __all__ = [
@@ -10,7 +11,8 @@ __all__ = [
 
 
 class ServerHttpProtocol(asyncio.Protocol):
-    def __init__(self):
+    def __init__(self, server):
+        self.server = server  # type: Server
         self.transport = None
         self._request = HttpRequest()
         self._parser = HttpParser(self._request)
@@ -27,14 +29,16 @@ class ServerHttpProtocol(asyncio.Protocol):
         self._parser.feed_data(data)
 
         if self._request.is_complete():
+            self.server.loop.create_task(self.server.router.route_request(self._request, self.transport))
             self._request = None
 
 
 class Server:
     def __init__(self, loop: typing.Optional[asyncio.AbstractEventLoop]=None):
-        self._loop = asyncio.get_event_loop() if loop is None else loop
+        self.loop = asyncio.get_event_loop() if loop is None else loop
         self._coro = None
+        self.router = RequestRouter()
 
     async def run(self, host: str, port: int, ssl: _ssl.SSLContext=None):
-        self._coro = self._loop.create_server(ServerHttpProtocol, host, port, ssl=ssl)
+        self._coro = self.loop.create_server(lambda: ServerHttpProtocol(self), host, port, ssl=ssl)
         await self._coro

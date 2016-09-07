@@ -10,13 +10,14 @@ _HTTP_RESPONSE_FORMAT_STRING = b'HTTP/%b %d %b'
 
 
 class HttpResponse(HttpMessage):
-    def __init__(self, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None):
+    def __init__(self, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]]=None,
+                 status_code: int=0, status: bytes=b''):
         HttpMessage.__init__(self)
         if headers is not None:
-            for key, val in headers:
+            for key, val in headers.items():
                 self.headers[key] = val
-        self.status_code = 0
-        self.status = b''
+        self.status_code = status_code
+        self.status = status
 
     def on_status(self, status: bytes):
         self.status = status

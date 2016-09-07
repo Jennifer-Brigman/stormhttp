@@ -20,4 +20,4 @@ __all__ = [
     "client",
     "errors",
     "server"
-]
+] + primitives.__all__

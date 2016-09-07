@@ -17,6 +17,7 @@ __all__ = [
 _COOKIE_REGEX = re.compile(b'([^\\s=;]+)(?:=([^;]+))?(?:;|$)')
 _CHARSET_REGEX = re.compile(b'[^/]+/[^/]+;\s*charset=([^=;]+)')
 _COOKIE_META = {b'domain', b'path', b'expires', b'maxage', b'httponly', b'secure'}
+_COOKIE_DEFAULT_HOST = [None]
 _SUPPORTED_ENCODINGS = {b'gzip', b'deflate', b'br', b'identity'}
 _ENCODING_GZIP = b'gzip'
 _ENCODING_DEFLATE = b'deflate'
@@ -176,7 +177,7 @@ class HttpMessage:
         if _HEADER_COOKIE in self.headers:
 
             # Add a single cookie for a b'Cookie' header.
-            cookie = HttpCookie(domain=_headers.get(b'Host', [None])[0])
+            cookie = HttpCookie(domain=_headers.get(b'Host', _COOKIE_DEFAULT_HOST)[0])
 
             for cookie_header in self.headers[_HEADER_COOKIE]:
                 for key, value in _COOKIE_REGEX.findall(cookie_header):
@@ -204,9 +205,11 @@ class HttpMessage:
                                 cookie.expires = datetime.datetime.strptime(value.decode("utf-8"), _COOKIE_EXPIRE_FORMAT)
                             except ValueError:
                                 pass
+                            except UnicodeDecodeError:
+                                pass
                         elif key_lower == b'maxage':
                             try:
-                                cookie.max_age = int(value.decode("utf-8"))
+                                cookie.max_age = int(value)
                             except ValueError:
                                 pass
                             except UnicodeDecodeError:
