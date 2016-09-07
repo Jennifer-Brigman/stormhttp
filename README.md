@@ -79,20 +79,6 @@ Requests/sec:   1815.65
 Transfer/sec:    177.43MB
 ```
 
-#### Flask
-
-```
-Running 30s test @ http://127.0.0.1:5000
-  250 threads and 500 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency   121.16ms  131.92ms   1.73s    94.91%
-    Req/Sec    14.15      8.03    40.00     80.15%
-  12947 requests in 30.10s, 1.24GB read
-  Socket errors: connect 0, read 73, write 0, timeout 279
-Requests/sec:    430.13
-Transfer/sec:     42.07MB
-```
-
 ## License
 
 Stormhttp is licensed under the Apache 2.0 license.
