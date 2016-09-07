@@ -24,33 +24,18 @@ cd stormhttp && python setup.py install
 
 ## Features
 
-:tada: Complete HTTP client and server functionality.
-
-:rocket: Super fast HTTP [parser](https://github.com/MagicStack/httptools/) and builder.
-
-:muscle: Extremely flexible by having minimal decisions made for you. Power users rejoice!
-
-:lock: Support SSL/TLS for HTTPS connections.
-
-:cookie: Cookies that can be stored offline for future Client sessions.
-
-:package: Tons of optional extensions like sessions, CORS, authentication, all ready to use!
-
-:zzz: Completely asynchronous, no more blocking!
+ - Complete HTTP client and server functionality.
+ - Super fast HTTP [parser](https://github.com/MagicStack/httptools/) and builder.
+ - Extremely flexible by having minimal decisions made for you. Power users rejoice!
+ - Support SSL/TLS for HTTPS connections.
+ - Cookies that can be stored offline for future Client sessions.
+ - Tons of optional extensions like sessions, CORS, authentication, all ready to use!
 
 ... and many more! [View our documentation](https://github.com/SethMichaelLarson/stormhttp/docs) for a complete list of features.
 
 ## Benchmarks
 
 Did I mention that Stormhttp is lightning-fast? :runner::dash:
-
-| Statistic | Stormhttp | Aiohttp | Albatross | Flask |
-| --------- | --------- | ------- | --------- | ----- |
-| Latency | 78.36 ms | 163.17 ms | 61.31 ms | 121.16ms |
-| Requests | 184,852 | 64,520 | 54,645 | 12,947 |
-| Requests/s | 6141.12 | 2143.44 | 1815.15 | 430.13 |
-| Transferred | 17.64 GB | 6.16 GB | 5.21 GB | 1.24 GB |
-| Throughput | 600.12 MB/s | 209.57 MB/s | 177.43 MB/s | 42.07 MB/s |
 
 #### Stormhttp
 
