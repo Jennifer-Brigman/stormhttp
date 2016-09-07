@@ -8,14 +8,12 @@ __all__ = [
 ]
 _PREFIX_DELIMITER = b'/'
 _PREFIX_LEAF = b'/'
-_HTTP_METHOD_GET = b'GET'
-_HTTP_METHOD_HEAD = b'HEAD'
 _HEADER_ACCEPT_ENCODING = b'Accept-Encoding'
 
 
 class RequestRouter:
     def __init__(self):
-        self._prefix = {}
+        self._prefix = {}  # type: typing.Dict[bytes, typing.Any]
 
     def add_route(self, path: bytes, method: bytes, handler: typing.Callable[[HttpRequest], HttpResponse]) -> None:
         prefix_branch = self._traverse_prefix_autofill(path)
@@ -35,8 +33,8 @@ class RequestRouter:
             response.headers[b'Content-Length'] = 0
         else:
             is_head = False
-            if request.method == _HTTP_METHOD_HEAD and request.method not in prefix_branch and _HTTP_METHOD_GET in prefix_branch:
-                request.method = _HTTP_METHOD_GET
+            if request.method == b'HEAD' and request.method not in prefix_branch and b'GET' in prefix_branch:
+                request.method = b'GET'
                 is_head = True
             if request.method not in prefix_branch:
                 response = HttpResponse()
@@ -52,8 +50,8 @@ class RequestRouter:
                     response = handler(request)
             if is_head:
                 response.body = b''
-        if _HEADER_ACCEPT_ENCODING in request.headers and len(response.body) > 0:
-            for encoding, _ in request.headers.qlist(_HEADER_ACCEPT_ENCODING):
+        if b'Accept-Encoding' in request.headers and len(response):
+            for encoding, _ in request.headers.qlist(b'Accept-Encoding'):
                 if encoding in _SUPPORTED_ENCODINGS:
                     response.set_encoding(encoding)
                     break
@@ -67,7 +65,7 @@ class RequestRouter:
         :param path: Path to traverse.
         :return: Leaf node of the prefix trie.
         """
-        path = path.strip(_PREFIX_DELIMITER).split(_PREFIX_DELIMITER)
+        path = path.strip(b'/').split(b'/')
         current = self._prefix
         for step in path:
             if step == b'':
@@ -84,7 +82,7 @@ class RequestRouter:
         :param path: Path to traverse.
         :return: Leaf node of the prefix trie.
         """
-        path = path.strip(_PREFIX_DELIMITER).split(_PREFIX_DELIMITER)
+        path = path.strip(b'/').split(b'/')
         current = self._prefix
         for step in path:
             if step == b'':

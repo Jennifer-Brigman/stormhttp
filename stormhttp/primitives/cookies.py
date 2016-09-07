@@ -72,7 +72,7 @@ class HttpCookie:
             expire_times.append(self._max_age_set + datetime.timedelta(seconds=self._max_age))
         if self.expires is not None:
             expire_times.append(self.expires)
-        if len(expire_times) == 0:
+        if not expire_times:
             return None
         else:
             return min(expire_times)
@@ -93,9 +93,10 @@ class HttpCookie:
             cookie_domains = self.domain.split(_COOKIE_SUBDOMAIN_DELIMITER)
             if cookie_domains[0] == b'':  # This is to remove the '.google.com' "fix" for old browsers.
                 cookie_domains = cookie_domains[1:]
-            if len(cookie_domains) > len(url_domains):
+            len_cookie_domains = len(cookie_domains)
+            if len_cookie_domains > len(url_domains):
                 return False
-            for i in range(-1, -len(cookie_domains)-1, -1):
+            for i in range(-1, -len_cookie_domains-1, -1):
                 if url_domains[i] != cookie_domains[i]:
                     return False
 

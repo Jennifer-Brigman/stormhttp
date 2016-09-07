@@ -24,16 +24,17 @@ class HttpMessage:
     def __init__(self):
         self.headers = HttpHeaders()
         self.cookies = HttpCookies()
-        self.body = b''
         self.version = b''
 
+        self._body = b''
+        self._body_len = 0
         self._body_buffer = []
         self._header_buffer = []
         self._is_header_complete = False
         self._is_complete = False
 
-    def __len__(self):
-        return len(self.body)
+    def __len__(self) -> int:
+        return self._body_len
 
     def is_complete(self) -> bool:
         return self._is_complete
@@ -54,7 +55,7 @@ class HttpMessage:
         """
         assert encoding in _SUPPORTED_ENCODINGS
         current_encoding = self.headers.get(b'Content-Encoding', [b'identity'])[0]
-        if current_encoding == encoding or len(self.body) == 0:
+        if current_encoding == encoding or not self._body_len:
             return  # No-op if the encoding is already correct.
 
         # Decoding the current encoding.
@@ -80,7 +81,7 @@ class HttpMessage:
 
         # Optionally set the headers.
         if set_headers:
-            self.headers[b'Content-Length'] = b'%d' % len(self.body)
+            self.headers[b'Content-Length'] = b'%d' % self._body_len
             self.headers[b'Content-Encoding'] = encoding
 
     def body_string(self) -> str:
@@ -126,6 +127,15 @@ class HttpMessage:
         :return: The body as JSON.
         """
         return loads(self.body_string())
+
+    @property
+    def body(self) -> bytes:
+        return self._body
+
+    @body.setter
+    def body(self, body: bytes):
+        self._body = body
+        self._body_len = len(body)
 
     # httptools parser interface
 
@@ -214,5 +224,6 @@ class HttpMessage:
         self._body_buffer.append(body)
 
     def on_message_complete(self) -> None:
-        self.body = b''.join(self._body_buffer)
+        self._body = b''.join(self._body_buffer)
+        self._body_len = len(self._body)
         self._is_complete = True

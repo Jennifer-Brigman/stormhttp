@@ -23,9 +23,9 @@ class HttpResponse(HttpMessage):
 
     def to_bytes(self) -> bytes:
         parts = [b'HTTP/%b %d %b' % (self.version, self.status_code, self.status)]
-        if len(self.headers) > 0:
+        if self.headers:
             parts.append(self.headers.to_bytes())
-        if len(self.cookies):
+        if self.cookies:
             parts.append(self.cookies.to_bytes(set_cookie=True))
         parts.append(b'')
         parts.append(self.body)

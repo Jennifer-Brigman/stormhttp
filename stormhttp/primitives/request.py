@@ -23,15 +23,15 @@ class HttpRequest(HttpMessage):
         if raw_url != b'':
             url = httptools.parse_url(raw_url)
             self.url = HttpUrl(raw_url, url.schema, url.host, url.port, url.path, url.query, url.fragment, url.userinfo)
-            if len(self.cookies) > 0:
+            if self.cookies:
                 for cookie in self.cookies.values():
                     cookie.path = url.path
 
     def to_bytes(self) -> bytes:
         parts = [b'%b %b HTTP/%b' % (self.method, self.url.get(), self.version)]
-        if len(self.headers) > 0:
+        if self.headers:
             parts.append(self.headers.to_bytes())
-        if len(self.cookies) > 0:
+        if self.cookies:
             parts.append(self.cookies.to_bytes())
         parts.append(b'')
         parts.append(self.body)

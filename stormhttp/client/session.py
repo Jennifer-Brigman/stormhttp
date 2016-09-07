@@ -148,7 +148,7 @@ class ClientSession:
             self._writer.write(request.to_bytes())
             while True:
                 data = await self._reader.read(buffer_length)
-                if len(data) > 0:
+                if data:
                     self._parser.feed_data(data)
                     if response.is_complete():
                         break
@@ -158,7 +158,7 @@ class ClientSession:
             await self.close()
 
         # If there's cookies to be added to the CookieJar, do so here.
-        if len(response.cookies) > 0:
+        if response.cookies:
             self.cookie_jar.update_cookies(request.url, response.cookies.values())
 
         # If there are redirects and we're allowed to follow, then follow them.
