@@ -39,7 +39,16 @@ class Server:
         self._coro = None
         self.router = RequestRouter()
 
-    def run(self, host: str, port: int, ssl: _ssl.SSLContext=None):
+    def run(self, host: str, port: int=None, ssl: _ssl.SSLContext=None):
+        if port is None:
+            if ssl is None:
+                port = 8080
+            else:
+                port = 8443
+        print("===== Running on {}://{}:{}/ =====\n(Press Ctrl+C to quit)".format(
+            "http" if ssl is None else "https",
+            host, port
+        ))
         try:
             self.loop.run_until_complete(self.loop.create_server(lambda: ServerHttpProtocol(self), host, port, ssl=ssl))
             self.loop.run_forever()
