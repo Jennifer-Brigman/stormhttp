@@ -29,3 +29,7 @@ class AbstractMiddleware(abc.ABC):
         route = route.rstrip(b'/')
         if len(route):
             self.routes.add(route)
+
+    def add_routes(self, routes: typing.Iterable[bytes], *args, **kwargs):
+        for route in routes:
+            self.add_route(route, *args, **kwargs)
