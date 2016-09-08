@@ -1,7 +1,4 @@
-from .cache import *
+from . import middleware
 from .server import *
-from .sessions import *
 
-__all__ = cache.__all__ + \
-          server.__all__ + \
-          sessions.__all__
+__all__ = ["middleware"] + server.__all__

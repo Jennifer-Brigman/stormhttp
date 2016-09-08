@@ -1,7 +1,7 @@
 import abc
 import datetime
 import json
-from ....primitives import HttpRequest, HttpResponse, HttpCookie
+from stormhttp.primitives import HttpRequest, HttpResponse, HttpCookie
 
 __all__ = [
     "AbstractServerSessionStorage"

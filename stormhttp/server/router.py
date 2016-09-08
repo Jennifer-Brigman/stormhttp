@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import typing
+from .middleware import AbstractMiddleware
 from ..primitives import HttpRequest, HttpResponse
 from ..primitives.message import _SUPPORTED_ENCODINGS
 
@@ -12,6 +13,7 @@ __all__ = [
 class RequestRouter:
     def __init__(self):
         self._prefix = {}  # type: typing.Dict[bytes, typing.Any]
+        self.middlewares = []  # type: typing.List[AbstractMiddleware]
         self.min_compression_length = 1400
 
     def add_route(self, path: bytes, method: bytes, handler: typing.Callable[[HttpRequest], HttpResponse]) -> None:
@@ -26,35 +28,58 @@ class RequestRouter:
     async def route_request(self, request: HttpRequest, transport: asyncio.WriteTransport):
         prefix_branch = self._traverse_prefix_nofill(request.url.path)
         if prefix_branch is None:
-            response = HttpResponse()
-            response.status_code = 404
-            response.status = b'Not Found'
-            response.headers[b'Content-Length'] = 0
+            response = HttpResponse(status_code=404, status=b'Not Found')
         else:
             is_head = False
             if request.method == b'HEAD' and request.method not in prefix_branch and b'GET' in prefix_branch:
                 request.method = b'GET'
                 is_head = True
             if request.method not in prefix_branch:
-                response = HttpResponse()
+                response = HttpResponse(status_code=405, status=b'Method Not Allowed')
                 response.headers[b'Allow'] = b', '.join(list(prefix_branch.keys()))
-                response.status_code = 405
-                response.status = b'Method Not Allowed'
             else:
-                handler = prefix_branch[request.method]
-                response = await handler(request)
+
+                # If the correct request handler is found, begin applying middlewares.
+                response = None
+                applied_middleware = []
+                for middleware in self.middlewares:
+                    if middleware.should_be_applied(request):
+                        if asyncio.iscoroutinefunction(middleware.before_handler):
+                            response = await middleware.before_handler(request)
+                        else:
+                            response = middleware.before_handler(request)
+                        if response is not None:
+                            break
+                        applied_middleware.append(middleware)
+
+                # If we haven't gotten a response yet, do the handler.
+                if response is None:
+                    handler = prefix_branch[request.method]
+                    response = await handler(request)
+
+                # All middlewares that were applied also get and after application.
+                for middleware in applied_middleware:
+                    if asyncio.iscoroutinefunction(middleware.after_handler):
+                        await middleware.after_handler(request, response)
+                    else:
+                        middleware.after_handler(request, response)
+
             if is_head:
                 response.body = b''
+
+        # Apply headers to the response that are always applied.
+        response.version = request.version
         if b'Accept-Encoding' in request.headers and len(response) > self.min_compression_length:
             for encoding, _ in request.headers.qlist(b'Accept-Encoding'):
                 if encoding in _SUPPORTED_ENCODINGS:
                     response.set_encoding(encoding)
                     break
-
-        response.headers[b'Content-Length'] = len(response)
-        response.headers[b'Date'] = datetime.datetime.utcnow()
-        response.headers[b'Server'] = b'stormhttp/0.0.23'
-        response.version = request.version
+        if b'Content-Length' not in response.headers:
+            response.headers[b'Content-Length'] = len(response)
+        if b'Date' not in response.headers:
+            response.headers[b'Date'] = datetime.datetime.utcnow()
+        if b'Server' not in response.headers:
+            response.headers[b'Server'] = b'stormhttp/0.0.23'
 
         transport.write(response.to_bytes())
 
