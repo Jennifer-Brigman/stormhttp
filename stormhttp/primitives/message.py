@@ -120,13 +120,13 @@ class HttpMessage:
 
         return body
 
-    def body_json(self, loads=json.loads) -> typing.Union[dict, list]:
+    def body_json(self, loads=json.loads, *args, **kwargs) -> typing.Union[dict, list]:
         """
         Loads the body as a JSON object if it is valid JSON.
         :param loads: Function to load the body as JSON with. Default: json.loads
         :return: The body as JSON.
         """
-        return loads(self.body_string())
+        return loads(self.body_string(), *args, **kwargs)
 
     @property
     def body(self) -> bytes:
