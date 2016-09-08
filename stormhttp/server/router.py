@@ -57,8 +57,9 @@ class RequestRouter:
                     handler = prefix_branch[request.method]
                     response = await handler(request)
 
-                # All middlewares that were applied also get and after application.
-                for middleware in applied_middleware:
+                # Apply middlewares after_handler() in reverse order.
+                # This is mostly for AbstractTemplatingMiddlewares to work correctly.
+                for middleware in applied_middleware[::-1]:
                     if asyncio.iscoroutinefunction(middleware.after_handler):
                         await middleware.after_handler(request, response)
                     else:

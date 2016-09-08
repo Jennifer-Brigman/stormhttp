@@ -18,6 +18,7 @@ class HttpRequest(HttpMessage):
         self.url = None  # type: HttpUrl
         self.method = b''
         self.match_info = {}  # type: typing.Dict[bytes, bytes]
+        self.session = None  # type: ServerSession
 
     def on_url(self, raw_url: bytes):
         if raw_url != b'':

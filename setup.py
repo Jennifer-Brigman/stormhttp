@@ -1,7 +1,6 @@
 from distutils.core import setup
 from setuptools.command.test import test
 from setuptools import find_packages
-from pkgutil import walk_packages
 import stormhttp
 
 

@@ -1,10 +1,10 @@
-import collections
 import typing
 from .message import HttpMessage
 
 # Global Variables
 __all__ = [
-    "HttpResponse"
+    "HttpResponse",
+    "TemplateHttpResponse"
 ]
 
 
@@ -33,3 +33,10 @@ class HttpResponse(HttpMessage):
 
     def __repr__(self):
         return "<HttpResponse status={} status_code={} headers={}>".format(self.status, self.status_code, self.headers)
+
+
+class TemplateHttpResponse(HttpResponse):
+    def __init__(self, headers: typing.Dict[bytes, typing.Union[bytes, typing.Iterable[bytes]]] = None,
+                 status_code: int = 0, status: bytes = b''):
+        self.template_info = {}  # typing.Dict[str, typing.Any]
+        HttpResponse.__init__(self, headers, status_code, status)
