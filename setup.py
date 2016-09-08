@@ -1,6 +1,7 @@
 from distutils.core import setup
 from setuptools.command.test import test
-from stormhttp import __version__
+from pkgutil import walk_packages
+import stormhttp
 
 
 class PyTest(test):
@@ -15,24 +16,25 @@ class PyTest(test):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
+
+# Taken from http://stackoverflow.com/questions/12966216/make-distutils-in-python-automatically-find-packages
+def find_packages(path=__path__, prefix=""):
+    yield prefix
+    prefix+= "."
+    for _, name, is_package in walk_packages(path, prefix):
+        if is_package:
+            yield name
+
 setup(
     name="stormhttp",
-    packages=[
-        "stormhttp",
-        "stormhttp/client",
-        "stormhttp/client/cookie_jar",
-        "stormhttp/primitives",
-        "stormhttp/server",
-        "stormhttp/server/sessions",
-        "stormhttp/server/sessions/storage"
-    ],
-    version=__version__,
+    packages=list(find_packages(stormhttp.__path__, stormhttp.__name__)),
+    version=stormhttp.__version__,
     description="Lightning-fast asynchronous web framework for Python 3.5+",
     license="Apache 2",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
     url="https://github.com/SethMichaelLarson/stormhttp",
-    download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + __version__,
+    download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + stormhttp.__version__,
     keywords=["web", "async", "framework"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
