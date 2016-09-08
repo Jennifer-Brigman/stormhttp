@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import typing
 from ..primitives import HttpRequest, HttpResponse
 from ..primitives.message import _SUPPORTED_ENCODINGS
@@ -6,9 +7,6 @@ from ..primitives.message import _SUPPORTED_ENCODINGS
 __all__ = [
     "RequestRouter"
 ]
-_PREFIX_DELIMITER = b'/'
-_PREFIX_LEAF = b'/'
-_HEADER_ACCEPT_ENCODING = b'Accept-Encoding'
 
 
 class RequestRouter:
@@ -18,12 +16,12 @@ class RequestRouter:
 
     def add_route(self, path: bytes, method: bytes, handler: typing.Callable[[HttpRequest], HttpResponse]) -> None:
         prefix_branch = self._traverse_prefix_autofill(path)
-        if _PREFIX_LEAF in prefix_branch:
-            if method in prefix_branch[_PREFIX_LEAF]:
+        if b'/' in prefix_branch:
+            if method in prefix_branch[b'/']:
                 raise ValueError("Route {} {} already exists.".format(method, path))
-            prefix_branch[_PREFIX_LEAF][method] = handler
+            prefix_branch[b'/'][method] = handler
         else:
-            prefix_branch[_PREFIX_LEAF] = {method: handler}
+            prefix_branch[b'/'] = {method: handler}
 
     async def route_request(self, request: HttpRequest, transport: asyncio.WriteTransport):
         prefix_branch = self._traverse_prefix_nofill(request.url.path)
@@ -42,13 +40,9 @@ class RequestRouter:
                 response.headers[b'Allow'] = b', '.join(list(prefix_branch.keys()))
                 response.status_code = 405
                 response.status = b'Method Not Allowed'
-                response.headers[b'Content-Length'] = 0
             else:
                 handler = prefix_branch[request.method]
-                if asyncio.iscoroutinefunction(handler):
-                    response = await handler(request)
-                else:
-                    response = handler(request)
+                response = await handler(request)
             if is_head:
                 response.body = b''
         if b'Accept-Encoding' in request.headers and len(response) > self.min_compression_length:
@@ -56,7 +50,12 @@ class RequestRouter:
                 if encoding in _SUPPORTED_ENCODINGS:
                     response.set_encoding(encoding)
                     break
+
+        response.headers[b'Content-Length'] = len(response)
+        response.headers[b'Date'] = datetime.datetime.utcnow()
+        response.headers[b'Server'] = b'stormhttp/0.0.23'
         response.version = request.version
+
         transport.write(response.to_bytes())
 
     def _traverse_prefix_autofill(self, path: bytes) -> typing.Dict[bytes, typing.Any]:
@@ -91,4 +90,4 @@ class RequestRouter:
             if step not in current:
                 return None
             current = current[step]
-        return current.get(_PREFIX_LEAF, None)
+        return current.get(b'/', None)

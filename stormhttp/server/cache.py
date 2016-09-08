@@ -42,7 +42,7 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
         not_modified_response = HttpResponse(status=b'Not Modified', status_code=304)
         not_modified_response.headers[b'Cache-Control'] = cache_control_header
 
-        async def _async_cache(request: HttpRequest) -> HttpResponse:
+        async def _cache(request: HttpRequest) -> HttpResponse:
             nonlocal cache_etag
             nonlocal cache_last_modified
             cache_active = False
@@ -62,7 +62,7 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
                 if last_modified is not None and b'If-Modified-Since' in request.headers:
                     cache_last_modified = last_modified(request)
                     if datetime.datetime.strptime(request.headers[b'If-Modified-Since'][0].decode("utf-8"), _COOKIE_EXPIRE_FORMAT) >= cache_last_modified:
-                        not_modified_response.headers[b'Last-Modified'] = cache_last_modified.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+                        not_modified_response.headers[b'Last-Modified'] = cache_last_modified
                         return not_modified_response
 
             response = await func(request)
@@ -78,66 +78,15 @@ def cache_control(cache_setting: bytes=CACHE_CONTROL_PRIVATE, max_age: int=None,
                 if last_modified is not None:
                     if cache_last_modified is None:
                         cache_last_modified = last_modified(request)
-                    response.headers[b'Last-Modified'] = cache_last_modified.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+                    response.headers[b'Last-Modified'] = cache_last_modified
 
                 if expires is not None:
                     expire_time = expires(request)
                     if isinstance(expire_time, datetime.datetime):
-                        response.headers[b'Expires'] = expire_time.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
+                        response.headers[b'Expires'] = expire_time
                     else:
                         response.headers[b'Expires'] = b'0'
 
             return response
-
-        async def _sync_cache(request: HttpRequest) -> HttpResponse:
-            nonlocal cache_etag
-            nonlocal cache_last_modified
-            cache_active = False
-
-            # Conditional request handling
-            if b'no-cache' not in request.headers.get(b'Cache-Control', []) and request.method in _CACHE_METHODS:
-                cache_active = True
-
-                # Etag / If-None-Match
-                if etag is not None and b'If-None-Match' in request.headers:
-                    cache_etag = etag(request)
-                    if cache_etag in request.headers[b'If-None-Match']:
-                        not_modified_response.headers[b'Etag'] = cache_etag
-                        return not_modified_response
-
-                # Last-Modifed / If-Modified-Since
-                if last_modified is not None and b'If-Modified-Since' in request.headers:
-                    cache_last_modified = last_modified(request)
-                    if datetime.datetime.strptime(request.headers[b'If-Modified-Since'][0].decode("utf-8"), _COOKIE_EXPIRE_FORMAT) >= cache_last_modified:
-                        not_modified_response.headers[b'Last-Modified'] = cache_last_modified.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
-                        return not_modified_response
-
-            response = func(request)
-
-            # Adding the headers to the HttpResponse on it's way out.
-            if cache_active:
-                response.headers[b'Cache-Control'] = cache_control_header
-                if etag is not None:
-                    if cache_etag is None:
-                        cache_etag = etag(request)
-                    response.headers[b'Etag'] = cache_etag
-
-                if last_modified is not None:
-                    if cache_last_modified is None:
-                        cache_last_modified = last_modified(request)
-                    response.headers[b'Last-Modified'] = cache_last_modified.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
-
-                if expires is not None:
-                    expire_time = expires(request)
-                    if isinstance(expire_time, datetime.datetime):
-                        response.headers[b'Expires'] = expire_time.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")
-                    else:
-                        response.headers[b'Expires'] = b'0'
-
-            return response
-
-        if asyncio.iscoroutinefunction(func):
-            return _async_cache
-        else:
-            return _sync_cache
+        return _cache
     return wrapped

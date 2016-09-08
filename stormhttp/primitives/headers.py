@@ -1,10 +1,12 @@
+import datetime
 import re
 import typing
+from .cookies import _COOKIE_EXPIRE_FORMAT
 
 __all__ = [
     "HttpHeaders"
 ]
-_QVALUE_REGEX = re.compile(b'\\s?([^,;]+)(?:;q=(\\-?[\\d\\.]+))?(?:,\\s?|$)')
+_QVALUE_REGEX = re.compile(b'\\s?([^,;]+)(?:;q=(-?[\\d\\.]+))?(?:,\\s?|$)')
 _QVALUE_DEFAULT = 1.0
 _HTTP_HEADER_KEY_CACHE = {}
 
@@ -21,8 +23,10 @@ class HttpHeaders(dict):
     def __setitem__(self, key: bytes, val: typing.Union[bytes, typing.Iterable[bytes]]) -> None:
         if isinstance(val, int):
             val = [b'%d' % val]
-        if isinstance(val, bytes):
+        elif isinstance(val, bytes):
             val = [val]
+        elif isinstance(val, datetime.datetime):
+            val = [val.strftime(_COOKIE_EXPIRE_FORMAT).encode("utf-8")]
         if key not in _HTTP_HEADER_KEY_CACHE:
             _HTTP_HEADER_KEY_CACHE[key] = key.upper()
         dict.__setitem__(self, _HTTP_HEADER_KEY_CACHE[key], val)
