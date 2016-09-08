@@ -80,7 +80,7 @@ class RequestRouter:
         if b'Date' not in response.headers:
             response.headers[b'Date'] = datetime.datetime.utcnow()
         if b'Server' not in response.headers:
-            response.headers[b'Server'] = b'stormhttp/0.0.23'
+            response.headers[b'Server'] = b'stormhttp/0.0.24'
 
         transport.write(response.to_bytes())
 
