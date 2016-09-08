@@ -1,5 +1,6 @@
 from distutils.core import setup
 from setuptools.command.test import test
+from setuptools import find_packages
 from pkgutil import walk_packages
 import stormhttp
 
@@ -16,18 +17,9 @@ class PyTest(test):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
-
-# Taken from http://stackoverflow.com/questions/12966216/make-distutils-in-python-automatically-find-packages
-def find_packages(path=__path__, prefix=""):
-    yield prefix
-    prefix+= "."
-    for _, name, is_package in walk_packages(path, prefix):
-        if is_package:
-            yield name
-
 setup(
     name="stormhttp",
-    packages=list(find_packages(stormhttp.__path__, stormhttp.__name__)),
+    packages=find_packages(exclude=["tests", "bench", "build"]),
     version=stormhttp.__version__,
     description="Lightning-fast asynchronous web framework for Python 3.5+",
     license="Apache 2",
