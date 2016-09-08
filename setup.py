@@ -26,7 +26,7 @@ setup(
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
     url="https://github.com/SethMichaelLarson/stormhttp",
-    download_url="https://github.com/SethMichaelLarson/stormhttp/tarball/" + stormhttp.__version__,
+    download_url="https://github.com/SethMichaelLarson/stormhttp/arhive/" + stormhttp.__version__ + ".tar.gz",
     keywords=["web", "async", "framework"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
