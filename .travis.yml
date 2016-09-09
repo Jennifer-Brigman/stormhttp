@@ -16,7 +16,7 @@ install:
 - pip install coverage coveralls pytest
 
 script:
-- coverage run --source=stormhttp setup.py test
+- coverage run --source=stormhttp setup.py test -v
 
 after_success:
 - coveralls
