@@ -5,7 +5,7 @@ __all__ = [
 
 class Session(dict):
     def __init__(self, identity, data):
-        self._identity = identity
+        self.identity = identity
         self._changed = False
         dict.update(self, data)
 
