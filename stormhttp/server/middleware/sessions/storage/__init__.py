@@ -1,6 +1,5 @@
 from .abc import *
 from .encrypted import *
-from .redis import *
 from .simple import *
 
 __all__ = abc.__all__ + \
