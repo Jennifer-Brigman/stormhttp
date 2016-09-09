@@ -38,6 +38,7 @@ setup(
     install_requires=[
         "brotlipy>=0.5.1",
         "cchardet>=1.0.0",
+        "cryptography>=1.5",
         "httptools>=0.0.9",
         "Jinja2>=2.8"
     ],

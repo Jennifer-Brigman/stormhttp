@@ -1,9 +1,9 @@
 __all__ = [
-    "ServerSession"
+    "Session"
 ]
 
 
-class ServerSession(dict):
+class Session(dict):
     def __init__(self, identity, data):
         self._identity = identity
         self._changed = False

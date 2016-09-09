@@ -1,4 +1,4 @@
-from .storage import AbstractServerSessionStorage
+from .storage import AbstractSessionStorage
 from ..abc import AbstractMiddleware
 from ....primitives import HttpRequest, HttpResponse, HttpCookie
 
@@ -8,7 +8,7 @@ __all__ = [
 
 
 class SessionMiddleware(AbstractMiddleware):
-    def __init__(self, storage: AbstractServerSessionStorage):
+    def __init__(self, storage: AbstractSessionStorage):
         self.storage = storage
         AbstractMiddleware.__init__(self)
 
@@ -29,4 +29,3 @@ class SessionMiddleware(AbstractMiddleware):
             session_cookie.http_only = self.storage.http_only
             session_cookie.secure = self.storage.secure
             response.cookies.add(session_cookie)
-        print(response.to_bytes())
