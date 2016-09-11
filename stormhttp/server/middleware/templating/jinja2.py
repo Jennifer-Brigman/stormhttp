@@ -12,4 +12,4 @@ class Jinja2TemplatingMiddleware(AbstractTemplatingMiddleware):
         AbstractTemplatingMiddleware.__init__(self)
 
     def render_template(self, route: bytes, environment: dict) -> bytes:
-        return self.environment.get_template(self.route_templates[route]).render(**environment).encode("utf-8")
+        return self.environment.get_template(self.route_templates[route]).render(**environment).encode(self.encoding)

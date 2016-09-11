@@ -9,7 +9,8 @@ __all__ = [
 
 
 class AbstractTemplatingMiddleware(AbstractMiddleware):
-    def __init__(self):
+    def __init__(self, encoding="utf-8"):
+        self.encoding = encoding
         self.route_templates = {}  # type: typing.Dict[bytes, str]
         AbstractMiddleware.__init__(self)
 

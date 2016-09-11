@@ -38,7 +38,6 @@ class ServerHttpProtocol(asyncio.Protocol):
 class Server:
     def __init__(self, loop: typing.Optional[asyncio.AbstractEventLoop]=None):
         self.loop = asyncio.get_event_loop() if loop is None else loop
-        self._coro = None
         self._prefix = {}  # type: typing.Dict[bytes, typing.Any]
         self.middlewares = []  # type: typing.List[AbstractMiddleware]
         self.min_compression_length = 1400
