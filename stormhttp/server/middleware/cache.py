@@ -46,9 +46,10 @@ class CacheControlPolicy:
 
 
 class CacheControlMiddleware(AbstractMiddleware):
-    def __init__(self):
-        self.cache_policies = {}  # typing.Dict[bytes, CacheControlPolicy]
-        self._request_to_policy = {}  # typing.Dict[HttpRequest, CacheControlPolicy]
+    def __init__(self, default: CacheControlPolicy):
+        self.cache_policies = {}  # type: typing.Dict[bytes, CacheControlPolicy]
+        self.default_policy = default  # type: CacheControlPolicy
+        self._request_to_policy = {}  # type: typing.Dict[HttpRequest, CacheControlPolicy]
         AbstractMiddleware.__init__(self)
 
     def add_route(self, route: bytes, cache_policy: CacheControlPolicy):
@@ -65,7 +66,7 @@ class CacheControlMiddleware(AbstractMiddleware):
                request.method in _CACHE_METHODS and (self.all_routes or request.url.path in self.routes)
 
     def before_handler(self, request: HttpRequest) -> typing.Optional[HttpResponse]:
-        cache_policy = self.cache_policies[request.url.path]
+        cache_policy = self.cache_policies.get(request.url.path, self.default_policy)
         self._request_to_policy[request] = cache_policy
 
         # Etag / If-None-Match
