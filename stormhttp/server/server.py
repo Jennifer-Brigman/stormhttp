@@ -97,7 +97,10 @@ class Server:
                 # If we haven't gotten a response yet, do the handler.
                 if response is None:
                     handler = prefix_branch[request.method]
-                    response = await handler(request)
+                    if asyncio.iscoroutinefunction(handler):
+                        response = await handler(request)
+                    else:
+                        response = handler(request)
 
                 # Apply middlewares after_handler() in reverse order.
                 # This is mostly for AbstractTemplatingMiddlewares to work correctly.
