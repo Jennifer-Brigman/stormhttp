@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import re
 import ssl as _ssl
 import typing
 from .middleware import AbstractMiddleware
@@ -10,6 +11,7 @@ __all__ = [
     "ServerHttpProtocol",
     "Server"
 ]
+_MATCH_INFO_REGEX = re.compile(b'^<([a-zA-Z_][a-zA-Z0-9_]*)>$')
 
 
 class ServerHttpProtocol(asyncio.Protocol):
@@ -42,15 +44,19 @@ class Server:
         self.middlewares = []  # type: typing.List[AbstractMiddleware]
         self.min_compression_length = 1400
 
+        from .. import __version__
+        self.server_version = __version__
+        self.server_header = b'Stormhttp/' + __version__.encode("utf-8")
+
     def run(self, host: str, port: int=None, ssl: _ssl.SSLContext=None):
         if port is None:
             if ssl is None:
                 port = 8080
             else:
                 port = 8443
-        print("===== Running on {}://{}:{}/ =====\n(Press Ctrl+C to quit)".format(
+        print("===== Running on {}://{}:{}/ (Stormhttp/{})=====\n(Press Ctrl+C to quit)".format(
             "http" if ssl is None else "https",
-            host, port
+            host, port, self.server_version
         ))
         try:
             self.loop.run_until_complete(self.loop.create_server(lambda: ServerHttpProtocol(self), host, port, ssl=ssl))
@@ -68,7 +74,7 @@ class Server:
             prefix_branch[b'/'] = {method: handler}
 
     async def route_request(self, request: HttpRequest, transport: asyncio.WriteTransport):
-        prefix_branch = self._traverse_prefix_nofill(request.url.path)
+        prefix_branch = self._traverse_prefix_nofill(request)
         if prefix_branch is None:
             response = HttpResponse(status_code=404, status=b'Not Found')
         else:
@@ -125,7 +131,7 @@ class Server:
         if b'Date' not in response.headers:
             response.headers[b'Date'] = datetime.datetime.utcnow()
         if b'Server' not in response.headers:
-            response.headers[b'Server'] = b'stormhttp/0.0.24'
+            response.headers[b'Server'] = self.server_header
 
         transport.write(response.to_bytes())
 
@@ -146,19 +152,27 @@ class Server:
             current = current[step]
         return current
 
-    def _traverse_prefix_nofill(self, path: bytes) -> typing.Optional[typing.Dict[bytes, typing.Any]]:
+    def _traverse_prefix_nofill(self, request: HttpRequest) -> typing.Optional[typing.Dict[bytes, typing.Any]]:
         """
         Traverses the prefix trie and returns the resulting leaf.
         This method does not fill in branches. Returns None if the leaf cannot be found.
-        :param path: Path to traverse.
+        This method also fills the request.match_info values.
+        :param request: HttpRequest to traverse the path for and fill in match_info values.
         :return: Leaf node of the prefix trie.
         """
-        path = path.strip(b'/').split(b'/')
+        path = request.url.path.strip(b'/').split(b'/')
         current = self._prefix
         for step in path:
             if step == b'':
                 continue
             if step not in current:
+                if len(current) == 1:
+                    pos_match_info = list(current.keys())[0]
+                    match_info = _MATCH_INFO_REGEX.match(pos_match_info)
+                    if match_info is not None:
+                        request.url.match_info[match_info.group(1)] = step
+                        current = current[pos_match_info]
+                        continue
                 return None
             current = current[step]
         return current.get(b'/', None)
