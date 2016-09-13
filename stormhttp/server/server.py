@@ -17,6 +17,7 @@ _MATCH_INFO_REGEX = re.compile(b'^<([a-zA-Z_][a-zA-Z0-9_]*)>$')
 class ServerHttpProtocol(asyncio.Protocol):
     def __init__(self, server):
         self.server = server  # type: Server
+        self.loop = server.loop
         self.transport = None
         self._request = HttpRequest()
         self._parser = HttpParser(self._request)
@@ -33,7 +34,7 @@ class ServerHttpProtocol(asyncio.Protocol):
         self._parser.feed_data(data)
 
         if self._request.is_complete():
-            self.server.loop.create_task(self.server.route_request(self._request, self.transport))
+            self.loop.create_task(self.server.route_request(self._request, self.transport))
             self._request = None
 
 
@@ -89,19 +90,20 @@ class Server:
                 response = HttpResponse(status_code=405, status=b'Method Not Allowed')
                 response.headers[b'Allow'] = b', '.join(list(prefix_branch.keys()))
             else:
+                response = None
 
                 # If the correct request handler is found, begin applying middlewares.
-                response = None
                 applied_middleware = []
-                for middleware in self.middlewares:
-                    if middleware.should_be_applied(request):
-                        if asyncio.iscoroutinefunction(middleware.before_handler):
-                            response = await middleware.before_handler(request)
-                        else:
-                            response = middleware.before_handler(request)
-                        if response is not None:
-                            break
-                        applied_middleware.append(middleware)
+                if self.middlewares:
+                    for middleware in self.middlewares:
+                        if middleware.should_be_applied(request):
+                            if asyncio.iscoroutinefunction(middleware.before_handler):
+                                response = await middleware.before_handler(request)
+                            else:
+                                response = middleware.before_handler(request)
+                            if response is not None:
+                                break
+                            applied_middleware.insert(0, middleware)
 
                 # If we haven't gotten a response yet, do the handler.
                 if response is None:
@@ -113,18 +115,19 @@ class Server:
 
                 # Apply middlewares after_handler() in reverse order.
                 # This is mostly for AbstractTemplatingMiddlewares to work correctly.
-                for middleware in applied_middleware[::-1]:
-                    if asyncio.iscoroutinefunction(middleware.after_handler):
-                        await middleware.after_handler(request, response)
-                    else:
-                        middleware.after_handler(request, response)
+                if applied_middleware:
+                    for middleware in applied_middleware:
+                        if asyncio.iscoroutinefunction(middleware.after_handler):
+                            await middleware.after_handler(request, response)
+                        else:
+                            middleware.after_handler(request, response)
 
             if is_head:
                 response.body = b''
 
         # Apply headers to the response that are always applied.
         response.version = request.version
-        if b'Accept-Encoding' in request.headers and len(response) > self.min_compression_length:
+        if len(response) > self.min_compression_length and b'Accept-Encoding' in request.headers:
             for encoding, _ in request.headers.qlist(b'Accept-Encoding'):
                 if encoding in _SUPPORTED_ENCODINGS:
                     response.set_encoding(encoding)
