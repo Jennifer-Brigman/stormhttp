@@ -5,7 +5,6 @@ def _make_http_url(url: bytes):
     from stormhttp import HttpUrl
     import httptools
     parsed_url = httptools.parse_url(url)
-    print(parsed_url.host)
     return HttpUrl(url, parsed_url.schema, parsed_url.host, parsed_url.port,
                    parsed_url.path, parsed_url.query, parsed_url.fragment, parsed_url.userinfo)
 

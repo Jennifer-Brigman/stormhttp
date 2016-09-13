@@ -73,7 +73,10 @@ class Server:
         else:
             prefix_branch[b'/'] = {method: handler}
 
-    async def route_request(self, request: HttpRequest, transport: asyncio.WriteTransport):
+    def add_middleware(self, middleware: AbstractMiddleware):
+        self.middlewares.append(middleware)
+
+    async def route_request(self, request: HttpRequest, transport: asyncio.WriteTransport, get_response=False):
         prefix_branch = self._traverse_prefix_nofill(request)
         if prefix_branch is None:
             response = HttpResponse(status_code=404, status=b'Not Found')
@@ -134,6 +137,9 @@ class Server:
             response.headers[b'Server'] = self.server_header
 
         transport.write(response.to_bytes())
+
+        if get_response:
+            return response
 
     def _traverse_prefix_autofill(self, path: bytes) -> typing.Dict[bytes, typing.Any]:
         """

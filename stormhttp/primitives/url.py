@@ -9,8 +9,8 @@ _QUERY_REGEX = re.compile(b'([^=&]+)=([^=&]+)')
 
 
 class HttpUrl:
-    def __init__(self, raw: bytes, schema: bytes, host: bytes, port: int, path: bytes,
-                 query: bytes, fragment: bytes, user_info: bytes):
+    def __init__(self, raw: bytes=b'', schema: bytes=b'', host: bytes=b'', port: int=-1, path: bytes=b'',
+                 query: bytes=b'', fragment: bytes=b'', user_info: bytes=b''):
         self.raw = raw
         self.schema = schema.lower() if schema is not None else b''
         self.host = host if host is not None else b''
