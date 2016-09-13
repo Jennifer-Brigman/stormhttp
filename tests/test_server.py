@@ -52,6 +52,59 @@ class TestServer(unittest.TestCase):
 
         asyncio.get_event_loop().run_until_complete(main())
 
+    def test_duplicate_route_same_method(self):
+        import stormhttp
+
+        async def main():
+            server = stormhttp.server.Server()
+
+            def handler(_):
+                response = stormhttp.HttpResponse(status=b'OK', status_code=200)
+                response.body = b'pass'
+                response.status_code = 200
+                return response
+
+            server.add_route(b'/foo', b'GET', handler)
+            with self.assertRaises(ValueError):
+                server.add_route(b'/foo', b'GET', handler)
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_duplicate_route_different_method(self):
+        import stormhttp
+
+        async def main():
+            server = stormhttp.server.Server()
+
+            def handler_get(_):
+                response = stormhttp.HttpResponse(status=b'OK', status_code=200)
+                response.body = b'get'
+                response.status_code = 200
+                return response
+
+            def handler_post(_):
+                response = stormhttp.HttpResponse(status=b'OK', status_code=200)
+                response.body = b'post'
+                response.status_code = 200
+                return response
+
+            server.add_route(b'/', b'GET', handler_get)
+            server.add_route(b'/', b'POST', handler_post)
+
+            request = stormhttp.HttpRequest()
+            request.url = stormhttp.HttpUrl(path=b'/')
+            request.method = b'GET'
+            request.version = b'1.1'
+
+            response = await server.route_request(request, FakeTransport(), get_response=True)
+            self.assertEqual(response.body, b'get')
+
+            request.method = b'POST'
+            response = await server.route_request(request, FakeTransport(), get_response=True)
+            self.assertEqual(response.body, b'post')
+
+        asyncio.get_event_loop().run_until_complete(main())
+
     def test_no_route_404(self):
         import stormhttp
 
@@ -148,5 +201,28 @@ class TestServer(unittest.TestCase):
             response = await server.route_request(request, FakeTransport(), get_response=True)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.body, b'')
+
+        asyncio.get_event_loop().run_until_complete(main())
+
+    def test_match_info(self):
+        import stormhttp
+
+        async def main():
+            server = stormhttp.server.Server()
+
+            def handler(_):
+                response = stormhttp.HttpResponse(status=b'OK', status_code=200)
+                response.body = b'pass'
+                response.status_code = 200
+                return response
+
+            request = stormhttp.HttpRequest()
+            request.url = stormhttp.HttpUrl(path=b'/foo/bar')
+            request.method = b'HEAD'
+            request.version = b'1.1'
+
+            server.add_route(b'/foo/<matchme>', b'GET', handler)
+            await server.route_request(request, FakeTransport(), get_response=True)
+            self.assertEqual(request.url.match_info[b'matchme'], b'bar')
 
         asyncio.get_event_loop().run_until_complete(main())
