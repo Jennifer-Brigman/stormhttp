@@ -13,15 +13,14 @@ class PyTest(test):
     def run_tests(self):
         import pytest
         import sys
-        errno = pytest.main(self.test_args)
-        sys.exit(errno)
+        sys.exit(pytest.main(self.test_args))
 
 setup(
     name="stormhttp",
     packages=find_packages(exclude=["tests", "bench", "build"]),
     version=stormhttp.__version__,
     description="Lightning-fast asynchronous web framework for Python 3.5+",
-    license="Apache 2",
+    license="MIT",
     author="Seth Michael Larson",
     author_email="sethmichaellarson@protonmail.com",
     url="https://github.com/SethMichaelLarson/stormhttp",
@@ -33,6 +32,7 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Topic :: Internet :: WWW/HTTP"
     ],
     install_requires=[
@@ -45,7 +45,8 @@ setup(
     tests_require=[
         "pytest",
         "coverage",
-        "coveralls"
+        "coveralls",
+        "pytest-sugar"
     ],
     cmdclass={
         "test": PyTest
