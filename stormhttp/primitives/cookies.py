@@ -2,8 +2,6 @@ import datetime
 import typing
 from .url import HttpUrl
 
-
-# Global Variables
 __all__ = [
     "HttpCookie",
     "HttpCookies"

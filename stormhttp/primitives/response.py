@@ -1,7 +1,6 @@
 import typing
 from .message import HttpMessage
 
-# Global Variables
 __all__ = [
     "HttpResponse",
     "TemplateHttpResponse"

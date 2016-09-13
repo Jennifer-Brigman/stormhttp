@@ -2,9 +2,7 @@ import typing
 import httptools
 from .message import HttpMessage
 from .request import HttpRequest
-from .response import HttpResponse
 
-# Global Variables
 __all__ = [
     "HttpParser"
 ]

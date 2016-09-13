@@ -1,18 +1,20 @@
 import asyncio
-import cchardet
-import httptools
+import sys
 import socket
 import ssl as _ssl
 import typing
+import httptools
 from .cookie_jar import CookieJar, AbstractCookieJar
 from ..primitives import HttpRequest, HttpResponse, HttpParser, HttpHeaders
 from ..errors import SslCertificateVerificationError, SslError
+from ..utils import safe_decode
 
 __all__ = [
     "ClientSession"
 ]
 _HTTP_REDIRECTS = {301, 302, 307, 308}
-_HAS_TCP_NODELAY = hasattr(socket, "TCP_NODELAY")
+_PY36 = sys.version_info > (3, 6)  # TCP_NODELAY is set by default on asyncio sockets Python 3.6+
+_SET_TCP_NODELAY = hasattr(socket, "TCP_NODELAY") and not _PY36
 
 
 class ClientSession:
@@ -53,12 +55,12 @@ class ClientSession:
                     self._writer.close()
                 try:
                     self._reader, self._writer = await asyncio.open_connection(
-                        host=host.decode(cchardet.detect(host)["encoding"]), port=port,
+                        host=safe_decode(host), port=port,
                         loop=self._loop, ssl=ssl
                     )
 
                     # Set TCP_NODELAY to allow writes to be minimally buffered.
-                    if _HAS_TCP_NODELAY:
+                    if _SET_TCP_NODELAY:
                         sock = self._writer.transport.get_extra_info("socket")
                         sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, True)
 

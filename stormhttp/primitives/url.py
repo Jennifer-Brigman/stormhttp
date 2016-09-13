@@ -1,7 +1,6 @@
 import re
 import typing
 
-# Global Variables
 __all__ = [
     "HttpUrl"
 ]

@@ -3,7 +3,6 @@ import typing
 from .message import HttpMessage
 from .url import HttpUrl
 
-# Global Variables
 __all__ = [
     "HttpRequest"
 ]
