@@ -1,6 +1,7 @@
 from distutils.core import setup
 from setuptools.command.test import test
 from setuptools import find_packages
+import os
 import stormhttp
 
 
@@ -14,6 +15,9 @@ class PyTest(test):
         import pytest
         import sys
         sys.exit(pytest.main(self.test_args))
+
+requirements_path = os.path.join(os.path.dirname(os.path.normpath(__file__)), "requirements.txt")
+install_requirements = [r.strip() for r in open(requirements_path, "r").read().split("\n") if len(r.strip()) > 0]
 
 setup(
     name="stormhttp",
@@ -35,13 +39,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Topic :: Internet :: WWW/HTTP"
     ],
-    install_requires=[
-        "brotlipy>=0.5.1",
-        "cchardet>=1.0.0",
-        "cryptography>=1.5",
-        "httptools>=0.0.9",
-        "Jinja2>=2.8"
-    ],
+    install_requires=install_requirements,
     tests_require=[
         "pytest",
         "coverage",

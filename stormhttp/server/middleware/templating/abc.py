@@ -37,6 +37,8 @@ class AbstractTemplatingMiddleware(AbstractMiddleware):
                 if "response" not in response.template_info:
                     response.template_info["response"] = response
                 response.body = self.render_template(request.url.path, response.template_info)
+                if b'Content-Type' not in response.headers:
+                    response.headers[b'Content-Type'] = b'text/html; charset=utf-8'
             except Exception as error:
                 response.body = str(error).encode("utf-8")
                 response.status_code = 500
