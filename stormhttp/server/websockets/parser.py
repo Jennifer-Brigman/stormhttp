@@ -112,7 +112,7 @@ class WebSocketFrame:
     def __init__(self, last_frame: int=0, message_code: int=0, payload: bytes=b'', close_code: int=-1):
         self.last_frame = last_frame
         self.message_code = message_code
-        self.payload = payload  # bytes
+        self.payload = payload  # type: bytes
         self.close_code = close_code
 
     def __repr__(self):
