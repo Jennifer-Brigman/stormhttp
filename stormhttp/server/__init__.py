@@ -1,5 +1,5 @@
-from . import middleware, websocket
+from . import middleware, websockets
 from .server import *
 
-__all__ = ["middleware", "websocket"] + \
+__all__ = ["middleware", "websockets"] + \
           server.__all__

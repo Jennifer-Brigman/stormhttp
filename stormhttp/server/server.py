@@ -1,9 +1,13 @@
 import asyncio
+import base64
 import datetime
+import hashlib
 import re
 import ssl as _ssl
 import typing
+import httptools
 from .middleware import AbstractMiddleware
+from .websockets import AbstractWebSocketProtocol, SUPPORTED_WEBSOCKET_VERSIONS, WEBSOCKET_SECRET_KEY
 from ..primitives import HttpParser, HttpRequest, HttpResponse
 from ..primitives.message import _SUPPORTED_ENCODINGS
 
@@ -18,24 +22,61 @@ class ServerHttpProtocol(asyncio.Protocol):
     def __init__(self, server):
         self.server = server  # type: Server
         self.loop = server.loop
-        self.transport = None
+        self.transport = None  # type: asyncio.WriteTransport
+        self._version = None
         self._request = HttpRequest()
         self._parser = HttpParser(self._request)
+        self._websocket_protocol = None  # type AbstractWebSocketProtocol
 
-    def connection_made(self, transport: asyncio.Transport):
+    def connection_made(self, transport: asyncio.WriteTransport):
         self.transport = transport
 
     def data_received(self, data: bytes):
-        if self._request is None:
-            new_request = HttpRequest()
-            self._request = new_request
-            self._parser.set_target(new_request)
+        if self._websocket_protocol is not None:
+            self._websocket_protocol.data_received(data)
+        else:
+            if self._request is None:
+                self._request = HttpRequest()
+                self._parser.set_target(self._request)
+            try:
+                self._parser.feed_data(data)
+            except httptools.HttpParserUpgrade:
 
-        self._parser.feed_data(data)
+                # Do the WebSocket handshake.
+                if b'websocket' in self._request.headers.get(b'Upgrade', [])[0] and \
+                   self._request.headers.get(b'Sec-WebSocket-Version', [b''])[0] in SUPPORTED_WEBSOCKET_VERSIONS:
 
-        if self._request.is_complete():
-            self.loop.create_task(self.server.route_request(self._request, self.transport))
-            self._request = None
+                    websocket_combine_key = self._request.headers[b'Sec-WebSocket-Key'][0] + WEBSOCKET_SECRET_KEY
+                    websocket_accept_key = base64.b64encode(hashlib.sha1(websocket_combine_key).digest())
+
+                    upgrade_response = HttpResponse(
+                        status_code=101,
+                        status=b'Switching Protocols',
+                        headers={
+                            b'Connection': b'Upgrade',
+                            b'Upgrade': b'websocket',
+                            b'Sec-WebSocket-Accept': websocket_accept_key,
+                            b'Date': datetime.datetime.utcnow(),
+                            b'Server': self.server.server_header
+                        }
+                    )
+                    upgrade_response.version = self._version if self._version is not None else b'1.1'
+                    self.transport.write(upgrade_response.to_bytes())
+                    self._websocket_protocol = self.server.websocket_protocol(self.server, self.transport)
+                else:
+                    bad_request = HttpResponse(
+                        status_code=405,
+                        status=b'Bad Request',
+                    )
+                    bad_request.version = self._request.version
+                    self.transport.write(bad_request.to_bytes())
+                    self.transport.close()
+            else:
+                if self._request.is_complete():
+                    if self._version is None:
+                        self._version = self._request.version
+                    self.loop.create_task(self.server.route_request(self._request, self.transport))
+                    self._request = None
 
 
 class Server:
@@ -48,6 +89,7 @@ class Server:
         from .. import __version__
         self.server_version = __version__
         self.server_header = b'Stormhttp/' + __version__.encode("utf-8")
+        self.websocket_protocol = None
 
     def run(self, host: str, port: int=None, ssl: _ssl.SSLContext=None):
         if port is None:
