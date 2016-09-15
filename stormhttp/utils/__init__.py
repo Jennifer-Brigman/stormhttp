@@ -1,5 +1,10 @@
 import sys
 import cchardet
+from . import fernet
+
+__all__ = [
+    "safe_decode"
+] + fernet.__all__
 
 
 def safe_decode(data: bytes) -> str:

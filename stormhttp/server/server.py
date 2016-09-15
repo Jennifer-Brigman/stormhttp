@@ -46,7 +46,30 @@ class ServerHttpProtocol(asyncio.Protocol):
                 if b'websocket' in self._request.headers.get(b'Upgrade', [])[0] and \
                    self._request.headers.get(b'Sec-WebSocket-Version', [b''])[0] in SUPPORTED_WEBSOCKET_VERSIONS:
 
-                    # Calculate the combined Sec-WebSocket-Key and GUUID for the Sec-WebSocket-Accept key.
+                    # If the server_origins has entries, then check Origin header.
+                    if self.server.server_origins:
+                        bad_origin = False
+                        if b'Origin' not in self._request.headers:
+                            bad_origin = True
+                        else:
+                            for entry, _ in self._request.headers.qlist(b'Origin'):
+                                if entry in self.server.server_origins:
+                                    break
+                            else:
+                                bad_origin = True
+                        if bad_origin:
+                            response = HttpResponse(
+                                status_code=403,
+                                status=b'Forbidden',
+                                headers={
+                                    b'Date': datetime.datetime.utcnow(),
+                                    b'Server': self.server.server_header
+                                }
+                            )
+                            response.version = self._request.version
+                            self.transport.write(response.to_bytes())
+
+                    # Calculate the combined Sec-WebSocket-Key and GUID for the Sec-WebSocket-Accept key.
                     websocket_combine_key = self._request.headers[b'Sec-WebSocket-Key'][0] + WEBSOCKET_SECRET_KEY
                     websocket_accept_key = base64.b64encode(hashlib.sha1(websocket_combine_key).digest())
 
@@ -67,13 +90,16 @@ class ServerHttpProtocol(asyncio.Protocol):
                     self.transport.write(upgrade_response.to_bytes())
                     self._websocket_protocol = self.server.websocket_protocol(self.server, self.transport)
                 else:
-                    bad_request = HttpResponse(
+                    response = HttpResponse(
                         status_code=501,
                         status=b'Not Implemented',
+                        headers={
+                            b'Date': datetime.datetime.utcnow(),
+                            b'Server': self.server.server_header
+                        }
                     )
-                    bad_request.version = self._request.version
-                    self.transport.write(bad_request.to_bytes())
-                    self.transport.close()
+                    response.version = self._request.version
+                    self.transport.write(response.to_bytes())
             else:
                 if self._request.is_complete():
                     if self._version is None:
@@ -92,6 +118,7 @@ class Server:
         from .. import __version__
         self.server_version = __version__
         self.server_header = b'Stormhttp/' + __version__.encode("utf-8")
+        self.server_origins = []
         self.websocket_protocol = None
 
     def run(self, host: str, port: int=None, ssl: _ssl.SSLContext=None):

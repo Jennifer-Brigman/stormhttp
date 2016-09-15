@@ -1,9 +1,9 @@
 import base64
 import datetime
 import json
-import cryptography.fernet
 from .abc import AbstractSessionStorage, _COOKIE_KEY
 from ..session import Session
+from .....utils import fernet
 
 __all__ = [
     "EncryptedSessionStorage"
@@ -13,7 +13,7 @@ __all__ = [
 class EncryptedSessionStorage(AbstractSessionStorage):
     def __init__(self, secret_key: bytes, cookie_key: bytes=_COOKIE_KEY, domain: bytes=None, path: bytes=b'/',
                  expires: datetime.datetime=None, max_age: int=None, http_only: bool=True, secure: bool=False):
-        self._fernet = cryptography.fernet.Fernet(base64.urlsafe_b64encode(secret_key))
+        self._fernet = fernet.Fernet(base64.urlsafe_b64encode(secret_key))
         AbstractSessionStorage.__init__(self, cookie_key, domain, path, expires, max_age, http_only, secure)
 
     def load_session(self, cookie_session: bytes):
@@ -24,7 +24,9 @@ class EncryptedSessionStorage(AbstractSessionStorage):
             pass
         except json.JSONDecodeError:
             pass
-        except cryptography.fernet.InvalidToken:
+        except fernet.InvalidToken:
+            pass
+        except fernet.InvalidSignature:
             pass
         if session_data is None:
             return self.new_session()
