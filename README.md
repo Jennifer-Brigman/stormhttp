@@ -4,19 +4,21 @@
 [![PyPI](https://img.shields.io/pypi/v/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 [![PyPI](https://img.shields.io/pypi/dm/stormhttp.svg?maxAge=300)](https://pypi.python.org/pypi/stormhttp)
 
-Lightning-fast asynchronous web framework for Python 3.5+. Suitable for both client and server use-cases. Built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
+Stormhttp is a lightning-fast asynchronous web framework for Python 3.5+. It is suitable for both client and server use. Stormhttp has been built to be a speedy lower-level replacement for aiohttp without sacrificing usability.
 
 > **NOTE:** This project is currently in alpha (>0.1.0) and therefore may not be suitable for production environments.
 
 ## Installation
 
-Stormhttp requires Python 3.5+ and is [available on PyPI](https://pypi.python.org/pypi/stormhttp). Use pip to install it ([Using a virtual environment is encouraged](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj90s7yr_vOAhUYzmMKHUBfDBMQFggeMAA&url=http%3A%2F%2Fdocs.python-guide.org%2Fen%2Flatest%2Fdev%2Fvirtualenvs%2F&usg=AFQjCNEvupNSRAVxfumkI5JFoxABd0GHhQ)):
+Stormhttp requires Python 3.5+ and is [available on PyPI](https://pypi.python.org/pypi/stormhttp). 
+
+You can use pip to install it with the following command: ([Using a virtual environment is encouraged](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj90s7yr_vOAhUYzmMKHUBfDBMQFggeMAA&url=http%3A%2F%2Fdocs.python-guide.org%2Fen%2Flatest%2Fdev%2Fvirtualenvs%2F&usg=AFQjCNEvupNSRAVxfumkI5JFoxABd0GHhQ)):
 
 ```
 python -m pip install stormhttp
 ```
 
-Or if you want to work with the latest development version you may download from git.
+If you would prefer to work with the latest development version you may download it directly from Github via the following link.
 ```
 git clone https://www.github.com/SethMichaelLarson/stormhttp.git
 cd stormhttp && python setup.py install
