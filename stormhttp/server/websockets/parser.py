@@ -164,8 +164,8 @@ class WebSocketParser:
         self._buffer += data
         buffer_length = len(self._buffer)
 
-        # Parsing the WebSocketFrame header
-        if self._state == _PARSER_STATE_EMPTY and buffer_length >= 2:
+        # Parsing the WebSocketFrame header (2 bytes)
+        if self._state == _PARSER_STATE_EMPTY and buffer_length > 1:
 
             first_byte, second_byte = self._buffer[:2]
             reserved = first_byte & 14
@@ -193,28 +193,28 @@ class WebSocketParser:
             self._buffer = self._buffer[2:]
             buffer_length -= 2
 
-        # Parsing the WebSocketFrame length (if needed)
+        # Parsing the WebSocketFrame length (if needed) (2 or 8 bytes)
         if self._state == _PARSER_STATE_HEADER:
-            if self._length == 126 and buffer_length >= 2:
+            if self._length == 126 and buffer_length > 1:
                 self._length = struct.unpack("!H", self._buffer[:2])
                 self._state = _PARSER_STATE_GET_LENGTH
                 self._buffer = self._buffer[2:]
                 buffer_length -= 2
 
-            elif self._length > 126 and buffer_length >= 8:
+            elif self._length > 126 and buffer_length > 7:
                 self._length = struct.unpack("!Q", self._buffer[:8])[0]
                 self._state = _PARSER_STATE_GET_LENGTH
                 self._buffer = self._buffer[8:]
                 buffer_length -= 8
 
-        # Parsing the WebSocketFrame mask (if needed)
-        if self._state == _PARSER_STATE_GET_LENGTH and buffer_length >= 4:
+        # Parsing the WebSocketFrame mask (if needed) (4 bytes)
+        if self._state == _PARSER_STATE_GET_LENGTH and buffer_length > 3:
             self._mask = self._buffer[:4]
             self._state = _PARSER_STATE_MASK
             self._buffer = self._buffer[4:]
             buffer_length -= 4
 
-        # Parsing the WebSocketFrame payload
+        # Parsing the WebSocketFrame payload (many bytes)
         if self._state == _PARSER_STATE_MASK and buffer_length >= self._length:
             if self._frame.message_code == MESSAGE_CODE_CLOSE:
                 self._frame.close_code = struct.unpack("!H", self._buffer[:2])[0]

@@ -46,6 +46,7 @@ class ServerHttpProtocol(asyncio.Protocol):
                 if b'websocket' in self._request.headers.get(b'Upgrade', [])[0] and \
                    self._request.headers.get(b'Sec-WebSocket-Version', [b''])[0] in SUPPORTED_WEBSOCKET_VERSIONS:
 
+                    # Calculate the combined Sec-WebSocket-Key and GUUID for the Sec-WebSocket-Accept key.
                     websocket_combine_key = self._request.headers[b'Sec-WebSocket-Key'][0] + WEBSOCKET_SECRET_KEY
                     websocket_accept_key = base64.b64encode(hashlib.sha1(websocket_combine_key).digest())
 
@@ -60,13 +61,15 @@ class ServerHttpProtocol(asyncio.Protocol):
                             b'Server': self.server.server_header
                         }
                     )
+
+                    # HTTP version is not parsed before the HttpParserUpgrade exception is thrown. Must
                     upgrade_response.version = self._version if self._version is not None else b'1.1'
                     self.transport.write(upgrade_response.to_bytes())
                     self._websocket_protocol = self.server.websocket_protocol(self.server, self.transport)
                 else:
                     bad_request = HttpResponse(
-                        status_code=405,
-                        status=b'Bad Request',
+                        status_code=501,
+                        status=b'Not Implemented',
                     )
                     bad_request.version = self._request.version
                     self.transport.write(bad_request.to_bytes())
